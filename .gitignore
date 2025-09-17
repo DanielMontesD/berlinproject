@@ -9,7 +9,6 @@ report-sales_takings-item_sold.csv
 *.jpg
 *.jpeg
 *.pdf
-*.txt
 comprehensive_sales_report.txt
 sales_analysis.png
 specific_category_analysis.png
