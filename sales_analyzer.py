@@ -7,7 +7,7 @@ This module provides comprehensive analysis of sales data including:
 - Visualization generation
 - Business insights extraction
 
-Author: Daniel Montes Delgado
+Author: Daniel Montes
 Date: 2025-09-17
 """
 
