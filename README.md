@@ -4,6 +4,13 @@ A comprehensive Python-based sales data analysis system for bar operations, feat
 
 ## 🚀 Key Features
 
+### 🔮 **Predictive Analytics & Forecasting** ✨ NEW!
+- **Monthly Sales Predictions**: Machine learning models to forecast future sales
+- **Product Demand Forecasting**: Predict demand for top products with trend analysis
+- **Seasonality Analysis**: Identify seasonal patterns (Melbourne seasons)
+- **Multiple ML Models**: Linear Regression and Random Forest with automatic model selection
+- **Actionable Insights**: Get business recommendations based on predictions
+
 ### 📊 **Multi-Dashboard Analytics System**
 - **4 Specialized Dashboards**: Temporal Trends, Product Performance, Category Analysis, and Category Performance
 - **Dynamic Data Loading**: Automatically processes monthly sales data from multiple periods
@@ -52,7 +59,34 @@ pip install -r requirements.txt
 
 ## 📊 Usage
 
-### 🎯 **Multi-Dashboard Analysis (Recommended)**
+### 🔮 **Predictive Analytics (NEW!)**
+
+```python
+from sales_predictor import SalesPredictor
+
+# Initialize the sales predictor
+predictor = SalesPredictor()
+
+# Run complete prediction analysis
+predictor.run_complete_analysis(
+    months_ahead=3,      # Predict next 3 months
+    top_products=10      # Analyze top 10 products
+)
+
+# Or run individual predictions
+predictor.load_all_data()
+predictor.predict_monthly_sales(months_ahead=3)
+predictor.predict_product_demand(top_n=10)
+predictor.analyze_seasonality()
+predictor.create_prediction_visualizations()
+predictor.generate_prediction_report("forecast_report.txt")
+```
+
+**Generated Files:**
+- `sales_predictions.png` - Comprehensive prediction visualizations
+- `sales_predictions_report.txt` - Detailed forecast report with insights
+
+### 🎯 **Multi-Dashboard Analysis**
 
 ```python
 from multi_dashboard_analysis import MultiDashboardAnalyzer
@@ -100,6 +134,9 @@ analyzer.generate_comprehensive_report("report.txt")
 ### 🚀 **Command Line Usage**
 
 ```bash
+# Run predictive analytics (NEW!)
+python sales_predictor.py
+
 # Run multi-dashboard analysis
 python multi_dashboard_analysis.py
 
@@ -111,7 +148,8 @@ python sales_analyzer.py
 
 ```
 berlin-project/
-├── multi_dashboard_analysis.py   # 🎯 Multi-dashboard analytics system (MAIN)
+├── sales_predictor.py            # 🔮 Predictive analytics & forecasting (NEW!)
+├── multi_dashboard_analysis.py   # 🎯 Multi-dashboard analytics system
 ├── sales_analyzer.py             # 📊 Basic sales analysis module
 ├── requirements.txt              # 📋 Python dependencies
 ├── .gitignore                   # 🔒 Git ignore rules (protects confidential data)
@@ -152,7 +190,15 @@ The system expects CSV files with the following structure:
 | Sales | Total revenue | "$137.50" |
 | % of Sales | Revenue percentage | "15.2%" |
 
-## 🎯 Dashboard Features
+## 🎯 Features Overview
+
+### 🔮 **Predictive Analytics Dashboard**
+- **Monthly Sales Forecast**: Predict sales for the next 1-12 months using ML models
+- **Product Demand Prediction**: Forecast demand for top products with trend indicators
+- **Seasonal Performance**: Analyze seasonal patterns specific to Melbourne
+- **Historical vs Predicted**: Visual comparison with confidence indicators
+- **Model Accuracy Metrics**: MAE, RMSE, and R² scores for transparency
+- **Business Insights**: Actionable recommendations based on predictions
 
 ### 📊 **Dashboard 1: Temporal Trends & Growth**
 - **Monthly Sales Trends**: Track performance over time with seasonal insights (Melbourne seasons)

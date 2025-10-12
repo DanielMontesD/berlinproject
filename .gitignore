@@ -12,9 +12,13 @@ report-sales_takings-item_sold.csv
 comprehensive_sales_report.txt
 sales_analysis.png
 specific_category_analysis.png
+sales_predictions_report.txt
+sales_predictions.png
+dashboard_*.png
 
 # Python
 __pycache__/
+.mypy_cache/
 *.py[cod]
 *$py.class
 *.so
