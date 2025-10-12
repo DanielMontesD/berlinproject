@@ -69,13 +69,13 @@ class SalesAnalyzer:
             ValueError: If data cannot be loaded or is invalid
         """
         try:
-            print("📊 Loading sales data...")
+            print(">> Loading sales data...")
 
             # Load CSV skipping the title row
             self.raw_data = pd.read_csv(self.csv_file_path, skiprows=1)
 
-            print(f"✅ Data loaded: {len(self.raw_data)} products")
-            print(f"📋 Available columns: {list(self.raw_data.columns)}")
+            print(f"OK Data loaded: {len(self.raw_data)} products")
+            print(f">> Available columns: {list(self.raw_data.columns)}")
 
             # Clean numeric columns
             self.raw_data["Unit Price"] = (
@@ -95,7 +95,7 @@ class SalesAnalyzer:
             # Filter only sold products (exclude totals and zero quantities)
             self.clean_data = self.raw_data[self.raw_data["Quantity"] > 0].copy()
 
-            print(f"✅ Clean data: {len(self.clean_data)} products with sales")
+            print(f"OK Clean data: {len(self.clean_data)} products with sales")
 
             return self.clean_data
 
@@ -355,7 +355,7 @@ class SalesAnalyzer:
         """
         data = self._ensure_data_loaded()
 
-        print("📈 Creating visualizations...")
+        print(">> Creating visualizations...")
 
         # Create figure with subplots
         fig, axes = plt.subplots(2, 3, figsize=(20, 12))
@@ -437,7 +437,7 @@ class SalesAnalyzer:
 
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches="tight")
-            print(f"✅ Visualizations saved as '{save_path}'")
+            print(f"OK Visualizations saved as '{save_path}'")
 
         plt.show()
         return fig
@@ -454,7 +454,7 @@ class SalesAnalyzer:
         """
         data = self._ensure_data_loaded()
         
-        print("📈 Creating specific category analysis...")
+        print(">> Creating specific category analysis...")
         
         # Create figure with 3 subplots
         fig, axes = plt.subplots(1, 3, figsize=(18, 6))
@@ -533,7 +533,7 @@ class SalesAnalyzer:
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches="tight")
-            print(f"✅ Specific category analysis saved as '{save_path}'")
+            print(f"OK Specific category analysis saved as '{save_path}'")
         
         plt.show()
         return fig
@@ -550,7 +550,7 @@ class SalesAnalyzer:
         """
         data = self._ensure_data_loaded()
 
-        print("📋 Generating comprehensive report...")
+        print(">> Generating comprehensive report...")
 
         # Calculate all metrics
         basic_metrics = self.calculate_basic_metrics()
@@ -657,7 +657,7 @@ class SalesAnalyzer:
         if output_path:
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(report_text)
-            print(f"✅ Report saved as '{output_path}'")
+            print(f"OK Report saved as '{output_path}'")
 
         return report_text
 
@@ -672,7 +672,7 @@ def main() -> SalesAnalyzer:
     Returns:
         SalesAnalyzer instance with completed analysis
     """
-    print("🚀 STARTING COMPREHENSIVE SALES ANALYSIS")
+    print(">> STARTING COMPREHENSIVE SALES ANALYSIS")
     print("=" * 60)
 
     try:
@@ -682,7 +682,7 @@ def main() -> SalesAnalyzer:
         # Load and analyze data
         analyzer.load_data()
 
-        print("\n🔍 Executing comprehensive analysis...")
+        print("\n>> Executing comprehensive analysis...")
 
         # Generate all analyses
         analyzer.calculate_basic_metrics()
@@ -702,8 +702,8 @@ def main() -> SalesAnalyzer:
         # Generate comprehensive report
         analyzer.generate_comprehensive_report(Path("comprehensive_sales_report.txt"))
 
-        print("\n✅ COMPREHENSIVE ANALYSIS COMPLETED!")
-        print("📁 Generated Files:")
+        print("\n>> COMPREHENSIVE ANALYSIS COMPLETED!")
+        print(">> Generated Files:")
         print("   • sales_analysis.png - General visualizations")
         print("   • specific_category_analysis.png - Beer, Signature Cocktails & Happy Hour analysis")
         print("   • comprehensive_sales_report.txt - Complete report")

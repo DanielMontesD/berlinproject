@@ -121,7 +121,7 @@ class MultiDashboardAnalyzer:
         - Creates self.consolidated_data with all data combined
         - Prints progress messages showing which months were loaded successfully
         """
-        print("📊 Loading data for multi-dashboard analysis...")
+        print(">> Loading data for multi-dashboard analysis...")
         
         # Define the path to reports and all possible months
         reports_dir = Path("reports")
@@ -174,15 +174,15 @@ class MultiDashboardAnalyzer:
                     # Store the processed data and track this month as available
                     self.monthly_data[month] = df
                     self.available_months.append(month)
-                    print(f"    ✅ {month}: {len(df)} items")
+                    print(f"    OK {month}: {len(df)} items")
                     
                 except Exception as e:
-                    print(f"    ❌ Error loading {month}: {e}")
+                    print(f"    ERROR loading {month}: {e}")
         
         if self.monthly_data:
             self.consolidated_data = pd.concat(self.monthly_data.values(), ignore_index=True)
-            print(f"📈 Total: {len(self.monthly_data)} months, {len(self.consolidated_data)} records")
-            print(f"📅 Available months: {', '.join(self.available_months)}")
+            print(f">> Total: {len(self.monthly_data)} months, {len(self.consolidated_data)} records")
+            print(f">> Available months: {', '.join(self.available_months)}")
 
     def create_temporal_trends_dashboard(self) -> None:
         """
@@ -215,7 +215,7 @@ class MultiDashboardAnalyzer:
         --------
         None
         """
-        print("📊 Creating Dashboard 1: Temporal Trends...")
+        print(">> Creating Dashboard 1: Temporal Trends...")
         
         if self.consolidated_data is None:
             return
@@ -311,7 +311,7 @@ class MultiDashboardAnalyzer:
         
         plt.tight_layout()
         plt.savefig('dashboard_1_temporal_trends.png', dpi=300, bbox_inches='tight')
-        print("✅ Dashboard 1 saved as 'dashboard_1_temporal_trends.png'")
+        print("OK Dashboard 1 saved as 'dashboard_1_temporal_trends.png'")
         plt.show()
 
     def create_product_performance_dashboard(self) -> None:
@@ -341,7 +341,7 @@ class MultiDashboardAnalyzer:
         --------
         None
         """
-        print("📊 Creating Dashboard 2: Product Performance...")
+        print(">> Creating Dashboard 2: Product Performance...")
         
         if self.consolidated_data is None:
             return
@@ -413,12 +413,12 @@ class MultiDashboardAnalyzer:
         ax_bottom_right.legend()
         
         plt.savefig('dashboard_2_product_performance.png', dpi=300, bbox_inches='tight')
-        print("✅ Dashboard 2 saved as 'dashboard_2_product_performance.png'")
+        print("OK Dashboard 2 saved as 'dashboard_2_product_performance.png'")
         plt.show()
 
     def create_category_analysis_dashboard(self) -> None:
         """Dashboard 3: Category and Menu Section Analysis"""
-        print("📊 Creating Dashboard 3: Category Analysis...")
+        print(">> Creating Dashboard 3: Category Analysis...")
         
         if self.consolidated_data is None:
             return
@@ -518,12 +518,12 @@ class MultiDashboardAnalyzer:
         
         plt.tight_layout()
         plt.savefig('dashboard_3_category_analysis.png', dpi=300, bbox_inches='tight')
-        print("✅ Dashboard 3 saved as 'dashboard_3_category_analysis.png'")
+        print("OK Dashboard 3 saved as 'dashboard_3_category_analysis.png'")
         plt.show()
 
     def create_business_metrics_dashboard(self) -> None:
         """Dashboard 4: Category Performance Analysis"""
-        print("📊 Creating Dashboard 4: Category Performance...")
+        print(">> Creating Dashboard 4: Category Performance...")
         
         if self.consolidated_data is None:
             return
@@ -660,7 +660,7 @@ class MultiDashboardAnalyzer:
         
         plt.tight_layout()
         plt.savefig('dashboard_4_category_performance.png', dpi=300, bbox_inches='tight')
-        print("✅ Dashboard 4 saved as 'dashboard_4_category_performance.png'")
+        print("OK Dashboard 4 saved as 'dashboard_4_category_performance.png'")
         plt.show()
 
     def run_all_dashboards(self) -> None:
@@ -700,7 +700,7 @@ class MultiDashboardAnalyzer:
         None
             Method produces files and console output only
         """
-        print("🚀 Creating Multiple Focused Dashboards (Dynamic Version)")
+        print(">> Creating Multiple Focused Dashboards (Dynamic Version)")
         print("=" * 70)
         
         # Step 1: Load and process all available monthly data
@@ -708,7 +708,7 @@ class MultiDashboardAnalyzer:
         
         # Step 2: Validate that we have data to work with
         if not self.monthly_data:
-            print("❌ No data found!")
+            print("ERROR: No data found!")
             return
         
         # Step 3: Generate all 4 thematic dashboards
@@ -719,13 +719,13 @@ class MultiDashboardAnalyzer:
         self.create_business_metrics_dashboard()     # KPIs and business metrics
         
         # Step 4: Display completion summary
-        print("\n🎉 All dashboards created successfully!")
+        print("\n>> All dashboards created successfully!")
         print("Generated files:")
-        print("  📊 dashboard_1_temporal_trends.png - Trends & Growth")
-        print("  📊 dashboard_2_product_performance.png - Product Analysis")
-        print("  📊 dashboard_3_category_analysis.png - Categories & Sections")
-        print("  📊 dashboard_4_category_performance.png - Category Performance")
-        print(f"\n📅 Data period: {', '.join(self.available_months)}")
+        print("  - dashboard_1_temporal_trends.png - Trends & Growth")
+        print("  - dashboard_2_product_performance.png - Product Analysis")
+        print("  - dashboard_3_category_analysis.png - Categories & Sections")
+        print("  - dashboard_4_category_performance.png - Category Performance")
+        print(f"\n>> Data period: {', '.join(self.available_months)}")
 
 
 def main():
