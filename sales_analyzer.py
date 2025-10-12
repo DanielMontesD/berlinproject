@@ -442,99 +442,188 @@ class SalesAnalyzer:
         plt.show()
         return fig
 
-    def generate_specific_category_analysis(self, save_path: Optional[Path] = None) -> plt.Figure:
+    def generate_specific_category_analysis(
+        self, save_path: Optional[Path] = None
+    ) -> plt.Figure:
         """
         Generate specific analysis for Beer, Signature Cocktails, and Happy Hour.
-        
+
         Args:
             save_path: Optional path to save the figure
-            
+
         Returns:
             Matplotlib figure object
         """
         data = self._ensure_data_loaded()
-        
+
         print(">> Creating specific category analysis...")
-        
+
         # Create figure with 3 subplots
         fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-        fig.suptitle("Specific Category Analysis - Berlin Project", fontsize=16, fontweight="bold")
-        
+        fig.suptitle(
+            "Specific Category Analysis - Berlin Project",
+            fontsize=16,
+            fontweight="bold",
+        )
+
         # 1. Beer Analysis
-        beer_data = data[data["Menu Section"].str.contains("Beer", case=False, na=False)]
+        beer_data = data[
+            data["Menu Section"].str.contains("Beer", case=False, na=False)
+        ]
         if len(beer_data) > 0:
-            beer_sales = beer_data.groupby("Menu Item")["Sales"].sum().sort_values(ascending=True)
-            axes[0].barh(range(len(beer_sales)), beer_sales.values, color="#FFA500", alpha=0.8)
+            beer_sales = (
+                beer_data.groupby("Menu Item")["Sales"]
+                .sum()
+                .sort_values(ascending=True)
+            )
+            axes[0].barh(
+                range(len(beer_sales)), beer_sales.values, color="#FFA500", alpha=0.8
+            )
             axes[0].set_yticks(range(len(beer_sales)))
             axes[0].set_yticklabels(
-                [item[:20] + "..." if len(item) > 20 else item for item in beer_sales.index],
-                fontsize=9
+                [
+                    item[:20] + "..." if len(item) > 20 else item
+                    for item in beer_sales.index
+                ],
+                fontsize=9,
             )
             axes[0].set_xlabel("Sales ($)")
             axes[0].set_title("Beer Sales Analysis", fontweight="bold")
             axes[0].grid(True, alpha=0.3)
-            
+
             # Add total sales text
             total_beer_sales = beer_sales.sum()
-            axes[0].text(0.02, 0.98, f"Total: ${total_beer_sales:,.2f}", 
-                        transform=axes[0].transAxes, fontsize=10, fontweight="bold",
-                        verticalalignment="top", bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+            axes[0].text(
+                0.02,
+                0.98,
+                f"Total: ${total_beer_sales:,.2f}",
+                transform=axes[0].transAxes,
+                fontsize=10,
+                fontweight="bold",
+                verticalalignment="top",
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8),
+            )
         else:
-            axes[0].text(0.5, 0.5, "No Beer Data Found", ha="center", va="center", transform=axes[0].transAxes)
+            axes[0].text(
+                0.5,
+                0.5,
+                "No Beer Data Found",
+                ha="center",
+                va="center",
+                transform=axes[0].transAxes,
+            )
             axes[0].set_title("Beer Sales Analysis", fontweight="bold")
-        
+
         # 2. Signature Cocktails Analysis
-        signature_data = data[data["Menu Section"].str.contains("Signature cocktails", case=False, na=False)]
+        signature_data = data[
+            data["Menu Section"].str.contains(
+                "Signature cocktails", case=False, na=False
+            )
+        ]
         if len(signature_data) > 0:
-            signature_sales = signature_data.groupby("Menu Item")["Sales"].sum().sort_values(ascending=True)
-            axes[1].barh(range(len(signature_sales)), signature_sales.values, color="#FF69B4", alpha=0.8)
+            signature_sales = (
+                signature_data.groupby("Menu Item")["Sales"]
+                .sum()
+                .sort_values(ascending=True)
+            )
+            axes[1].barh(
+                range(len(signature_sales)),
+                signature_sales.values,
+                color="#FF69B4",
+                alpha=0.8,
+            )
             axes[1].set_yticks(range(len(signature_sales)))
             axes[1].set_yticklabels(
-                [item[:20] + "..." if len(item) > 20 else item for item in signature_sales.index],
-                fontsize=9
+                [
+                    item[:20] + "..." if len(item) > 20 else item
+                    for item in signature_sales.index
+                ],
+                fontsize=9,
             )
             axes[1].set_xlabel("Sales ($)")
             axes[1].set_title("Signature Cocktails Analysis", fontweight="bold")
             axes[1].grid(True, alpha=0.3)
-            
+
             # Add total sales text
             total_signature_sales = signature_sales.sum()
-            axes[1].text(0.02, 0.98, f"Total: ${total_signature_sales:,.2f}", 
-                        transform=axes[1].transAxes, fontsize=10, fontweight="bold",
-                        verticalalignment="top", bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+            axes[1].text(
+                0.02,
+                0.98,
+                f"Total: ${total_signature_sales:,.2f}",
+                transform=axes[1].transAxes,
+                fontsize=10,
+                fontweight="bold",
+                verticalalignment="top",
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8),
+            )
         else:
-            axes[1].text(0.5, 0.5, "No Signature Cocktails Data Found", ha="center", va="center", transform=axes[1].transAxes)
+            axes[1].text(
+                0.5,
+                0.5,
+                "No Signature Cocktails Data Found",
+                ha="center",
+                va="center",
+                transform=axes[1].transAxes,
+            )
             axes[1].set_title("Signature Cocktails Analysis", fontweight="bold")
-        
+
         # 3. Happy Hour Analysis
-        happy_hour_data = data[data["Menu Section"].str.contains("Happy Hour", case=False, na=False)]
+        happy_hour_data = data[
+            data["Menu Section"].str.contains("Happy Hour", case=False, na=False)
+        ]
         if len(happy_hour_data) > 0:
-            happy_hour_sales = happy_hour_data.groupby("Menu Item")["Sales"].sum().sort_values(ascending=True)
-            axes[2].barh(range(len(happy_hour_sales)), happy_hour_sales.values, color="#32CD32", alpha=0.8)
+            happy_hour_sales = (
+                happy_hour_data.groupby("Menu Item")["Sales"]
+                .sum()
+                .sort_values(ascending=True)
+            )
+            axes[2].barh(
+                range(len(happy_hour_sales)),
+                happy_hour_sales.values,
+                color="#32CD32",
+                alpha=0.8,
+            )
             axes[2].set_yticks(range(len(happy_hour_sales)))
             axes[2].set_yticklabels(
-                [item[:20] + "..." if len(item) > 20 else item for item in happy_hour_sales.index],
-                fontsize=9
+                [
+                    item[:20] + "..." if len(item) > 20 else item
+                    for item in happy_hour_sales.index
+                ],
+                fontsize=9,
             )
             axes[2].set_xlabel("Sales ($)")
             axes[2].set_title("Happy Hour Analysis", fontweight="bold")
             axes[2].grid(True, alpha=0.3)
-            
+
             # Add total sales text
             total_happy_hour_sales = happy_hour_sales.sum()
-            axes[2].text(0.02, 0.98, f"Total: ${total_happy_hour_sales:,.2f}", 
-                        transform=axes[2].transAxes, fontsize=10, fontweight="bold",
-                        verticalalignment="top", bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+            axes[2].text(
+                0.02,
+                0.98,
+                f"Total: ${total_happy_hour_sales:,.2f}",
+                transform=axes[2].transAxes,
+                fontsize=10,
+                fontweight="bold",
+                verticalalignment="top",
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8),
+            )
         else:
-            axes[2].text(0.5, 0.5, "No Happy Hour Data Found", ha="center", va="center", transform=axes[2].transAxes)
+            axes[2].text(
+                0.5,
+                0.5,
+                "No Happy Hour Data Found",
+                ha="center",
+                va="center",
+                transform=axes[2].transAxes,
+            )
             axes[2].set_title("Happy Hour Analysis", fontweight="bold")
-        
+
         plt.tight_layout()
-        
+
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches="tight")
             print(f"OK Specific category analysis saved as '{save_path}'")
-        
+
         plt.show()
         return fig
 
@@ -695,9 +784,11 @@ def main() -> SalesAnalyzer:
 
         # Generate visualizations
         analyzer.generate_visualizations(Path("sales_analysis.png"))
-        
+
         # Generate specific category analysis
-        analyzer.generate_specific_category_analysis(Path("specific_category_analysis.png"))
+        analyzer.generate_specific_category_analysis(
+            Path("specific_category_analysis.png")
+        )
 
         # Generate comprehensive report
         analyzer.generate_comprehensive_report(Path("comprehensive_sales_report.txt"))
@@ -705,7 +796,9 @@ def main() -> SalesAnalyzer:
         print("\n>> COMPREHENSIVE ANALYSIS COMPLETED!")
         print(">> Generated Files:")
         print("   • sales_analysis.png - General visualizations")
-        print("   • specific_category_analysis.png - Beer, Signature Cocktails & Happy Hour analysis")
+        print(
+            "   • specific_category_analysis.png - Beer, Signature Cocktails & Happy Hour analysis"
+        )
         print("   • comprehensive_sales_report.txt - Complete report")
 
         return analyzer
