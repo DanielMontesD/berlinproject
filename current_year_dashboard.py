@@ -20,7 +20,7 @@ Generated Dashboards:
 4. Business Metrics: KPIs, average transactions, normalized metrics
 
 Typical Usage:
--------------
+-------------~
     analyzer = MultiDashboardAnalyzer()
     analyzer.run_all_dashboards()
 
@@ -83,7 +83,7 @@ class MultiDashboardAnalyzer:
         - Consolidated data from all months
         - Analysis results to avoid recalculations
         - List of months with available data
-        
+
         Parameters:
         -----------
         year : int
@@ -131,12 +131,12 @@ class MultiDashboardAnalyzer:
 
         # Define the path to reports and all possible months
         reports_dir = Path("reports") / str(self.year)
-        
+
         if not reports_dir.exists():
             print(f"   ❌ ERROR: Year directory {self.year} not found in reports/")
             print(f"   Please check that reports/{self.year}/ exists")
             return
-        
+
         months = [
             "January",
             "February",
@@ -224,7 +224,9 @@ class MultiDashboardAnalyzer:
                     # Store the processed data and track this month as available
                     self.monthly_data[month] = df
                     self.available_months.append(month)
-                    print(f"    OK {self.year}-{month}: {len(df)} items, ${df['Sales'].sum():,.2f}")
+                    print(
+                        f"    OK {self.year}-{month}: {len(df)} items, ${df['Sales'].sum():,.2f}"
+                    )
 
                 except Exception as e:
                     print(f"    ERROR loading {month}: {e}")
@@ -233,12 +235,14 @@ class MultiDashboardAnalyzer:
             self.consolidated_data = pd.concat(
                 self.monthly_data.values(), ignore_index=True
             )
-            total_sales = self.consolidated_data['Sales'].sum()
+            total_sales = self.consolidated_data["Sales"].sum()
             print(
                 f"\n>> Total {self.year}: {len(self.monthly_data)} months, "
                 f"{len(self.consolidated_data)} records, ${total_sales:,.2f}"
             )
-            print(f">> Period: {self.available_months[0]} to {self.available_months[-1]}")
+            print(
+                f">> Period: {self.available_months[0]} to {self.available_months[-1]}"
+            )
 
     def create_temporal_trends_dashboard(self) -> None:
         """
@@ -784,9 +788,9 @@ class MultiDashboardAnalyzer:
 
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle(
-            f"Dashboard 4: Category Performance Analysis - {self.year}", 
-            fontsize=18, 
-            fontweight="bold"
+            f"Dashboard 4: Category Performance Analysis - {self.year}",
+            fontsize=18,
+            fontweight="bold",
         )
 
         # Order months chronologically for all graphs
@@ -1057,9 +1061,15 @@ class MultiDashboardAnalyzer:
         print("Generated files:")
         print(f"  - dashboard_1_temporal_trends_{self.year}.png - Trends & Growth")
         print(f"  - dashboard_2_product_performance_{self.year}.png - Product Analysis")
-        print(f"  - dashboard_3_category_analysis_{self.year}.png - Categories & Sections")
-        print(f"  - dashboard_4_category_performance_{self.year}.png - Category Performance")
-        print(f"\n>> Data period: {self.available_months[0]} to {self.available_months[-1]} {self.year}")
+        print(
+            f"  - dashboard_3_category_analysis_{self.year}.png - Categories & Sections"
+        )
+        print(
+            f"  - dashboard_4_category_performance_{self.year}.png - Category Performance"
+        )
+        print(
+            f"\n>> Data period: {self.available_months[0]} to {self.available_months[-1]} {self.year}"
+        )
 
 
 def main(year: int = 2025):
@@ -1067,7 +1077,7 @@ def main(year: int = 2025):
     Main execution function for the multi-dashboard analysis.
 
     This function serves as the entry point when the script is run directly.
-    It creates an analyzer instance for the specified year and executes 
+    It creates an analyzer instance for the specified year and executes
     the complete dashboard workflow.
 
     Parameters:

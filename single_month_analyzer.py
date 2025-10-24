@@ -16,11 +16,11 @@ Typical Usage:
 -------------
     # Interactive mode (recommended) - uses current month by default
     python single_month_analyzer.py
-    
+
     # The program will prompt:
     # Year [2025]: 2024
     # Month [October]: September
-    
+
     # Programmatic mode
     from single_month_analyzer import main
     analyzer = main(year=2024, month="April")
@@ -782,7 +782,7 @@ def main(year: int = 2025, month: str = "September") -> SalesAnalyzer:
 
     This function demonstrates the complete workflow of the SalesAnalyzer class,
     including data loading, analysis, visualization, and report generation.
-    
+
     Parameters:
     -----------
     year : int
@@ -793,12 +793,12 @@ def main(year: int = 2025, month: str = "September") -> SalesAnalyzer:
     Returns:
     --------
     SalesAnalyzer instance with completed analysis
-    
+
     Example Usage:
     -------------
     # Analyze September 2025
     analyzer = main(2025, "September")
-    
+
     # Analyze April 2024
     analyzer = main(2024, "April")
     """
@@ -808,13 +808,13 @@ def main(year: int = 2025, month: str = "September") -> SalesAnalyzer:
     try:
         # Build path to CSV file with new structure
         csv_path = Path(f"reports/{year}/{month}/report-sales_takings-item_sold.csv")
-        
+
         if not csv_path.exists():
             print(f"❌ ERROR: File not found: {csv_path}")
             print(f"\nAvailable structure should be:")
             print(f"   reports/{year}/{month}/report-sales_takings-item_sold.csv")
             raise FileNotFoundError(f"Data file not found: {csv_path}")
-        
+
         # Initialize analyzer
         analyzer = SalesAnalyzer(csv_path)
 
@@ -863,33 +863,33 @@ def main(year: int = 2025, month: str = "September") -> SalesAnalyzer:
 if __name__ == "__main__":
     # Interactive mode: ask user for year and month
     from datetime import datetime
-    
+
     print("\n" + "=" * 60)
     print("SINGLE MONTH SALES ANALYZER")
     print("=" * 60)
-    
+
     # Get current date as default
     current_date = datetime.now()
     current_year = current_date.year
     current_month = current_date.strftime("%B")  # Full month name (e.g., "October")
-    
+
     print(f"\nCurrent date: {current_month} {current_year}")
     print("Press Enter to use current month or specify year and month.")
-    
+
     # Ask for year
     year_input = input(f"\nYear [{current_year}]: ").strip()
     year = int(year_input) if year_input else current_year
-    
+
     # Ask for month
     month_input = input(f"Month [{current_month}]: ").strip()
     month = month_input if month_input else current_month
-    
+
     # Capitalize first letter if needed
     if month:
         month = month.capitalize()
-    
+
     print(f"\n📊 Analyzing: {month} {year}")
     print("=" * 60 + "\n")
-    
+
     # Run analysis
     analyzer = main(year=year, month=month)

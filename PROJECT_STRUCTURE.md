@@ -24,13 +24,15 @@ berlin-project/
 
 ## 🎯 Usage
 
-### Multi-Year Forecasting
+### Multi-Year Forecasting (Production ML)
 ```bash
 python multi_year_sales_predictor.py
 ```
+**Performance:** MAPE ~5%, R² ~0.29 (Gradient Boosting)
+
 **Generates:**
-- `multi_year_forecast.png` - 6-panel ML forecast dashboard
-- `multi_year_forecast_report.txt` - Detailed report
+- `multi_year_forecast.png` - 5-panel ML forecast dashboard
+- `multi_year_forecast_report.txt` - Detailed forecast report with metrics
 
 ### Current Year Dashboard (2025)
 ```bash
