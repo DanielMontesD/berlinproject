@@ -4,17 +4,19 @@ A comprehensive Python-based sales data analysis system for bar operations, feat
 
 ## 🚀 Key Features
 
-### 🔮 **Predictive Analytics & Forecasting** ✨ NEW!
-- **Monthly Sales Predictions**: Machine learning models to forecast future sales
-- **Product Demand Forecasting**: Predict demand for top products with trend analysis
-- **Seasonality Analysis**: Identify seasonal patterns (Melbourne seasons)
-- **Multiple ML Models**: Linear Regression and Random Forest with automatic model selection
-- **Actionable Insights**: Get business recommendations based on predictions
+### 🔮 **Multi-Year Sales Forecasting** (Advanced ML)
+- **3 Years of Data**: Leverages 2023-2025 historical data for superior accuracy
+- **Advanced ML Models**: XGBoost, Gradient Boosting, Random Forest with auto-selection
+- **Rich Features**: Year-over-year trends, lag features, rolling statistics, cyclical encoding
+- **Time Series CV**: Proper validation respecting temporal order
+- **Confidence Intervals**: Predictions with statistical uncertainty ranges
+- **6-Panel Dashboard**: Comprehensive visualizations including YoY comparison and feature importance
 
-### 📊 **Multi-Dashboard Analytics System**
-- **4 Specialized Dashboards**: Temporal Trends, Product Performance, Category Analysis, and Category Performance
-- **Dynamic Data Loading**: Automatically processes monthly sales data from multiple periods
-- **Professional Visualizations**: Advanced matplotlib layouts with proper scaling and spacing
+### 📊 **Current Year Dashboard System**
+- **4 Specialized Dashboards**: Temporal Trends, Product Performance, Category Analysis, Category Performance
+- **Year-Specific Analysis**: Analyze any year (2023, 2024, 2025) separately
+- **Dynamic Data Loading**: Automatically processes monthly data from `reports/YEAR/MONTH/` structure
+- **Professional Visualizations**: Publication-quality matplotlib layouts
 
 ### 🎯 **Advanced Business Intelligence**
 - **Pareto Analysis (80/20 Rule)**: Identify products driving 80% of sales
@@ -37,6 +39,7 @@ A comprehensive Python-based sales data analysis system for bar operations, feat
 - scipy >= 1.9.0
 - scikit-learn >= 1.2.0
 - numpy >= 1.21.0
+- xgboost >= 1.7.0
 
 ## 🛠️ Installation
 
@@ -59,115 +62,117 @@ pip install -r requirements.txt
 
 ## 📊 Usage
 
-### 🔮 **Predictive Analytics (NEW!)**
+### 🔮 **Multi-Year Sales Forecasting** 
 
+**ML-Based Forecasting (Recommended):**
 ```python
-from sales_predictor import SalesPredictor
+from multi_year_sales_predictor import AdvancedSalesPredictor
 
-# Initialize the sales predictor
-predictor = SalesPredictor()
+# Initialize predictor with multi-year data
+predictor = AdvancedSalesPredictor()
 
-# Run complete prediction analysis
+# Run complete analysis (uses 2023-2025 data)
 predictor.run_complete_analysis(
-    months_ahead=3,      # Predict next 3 months
-    top_products=10      # Analyze top 10 products
+    years=[2023, 2024, 2025],  # Historical data years
+    forecast_months=3           # Predict next 3 months
 )
-
-# Or run individual predictions
-predictor.load_all_data()
-predictor.predict_monthly_sales(months_ahead=3)
-predictor.predict_product_demand(top_n=10)
-predictor.analyze_seasonality()
-predictor.create_prediction_visualizations()
-predictor.generate_prediction_report("forecast_report.txt")
 ```
 
 **Generated Files:**
-- `sales_predictions.png` - Comprehensive prediction visualizations
-- `sales_predictions_report.txt` - Detailed forecast report with insights
+- `multi_year_forecast.png` - Dashboard with 6 visualizations
+- `multi_year_forecast_report.txt` - Detailed forecast report with YoY analysis
 
-### 🎯 **Multi-Dashboard Analysis**
+### 📊 **Current Year Dashboard**
 
 ```python
-from multi_dashboard_analysis import MultiDashboardAnalyzer
+from current_year_dashboard import MultiDashboardAnalyzer
 
-# Initialize the multi-dashboard analyzer
-analyzer = MultiDashboardAnalyzer()
-
-# Load all monthly data dynamically
-analyzer.load_all_data()
-
-# Generate all 4 dashboards
+# Analyze current year (2025)
+analyzer = MultiDashboardAnalyzer(year=2025)
 analyzer.run_all_dashboards()
 
-# Or generate individual dashboards
-analyzer.create_temporal_trends_dashboard()      # Dashboard 1: Trends & Growth
-analyzer.create_product_performance_dashboard()  # Dashboard 2: Product Analysis  
-analyzer.create_category_analysis_dashboard()    # Dashboard 3: Categories & Sections
-analyzer.create_category_performance_dashboard() # Dashboard 4: Category Performance
+# Or analyze a different year
+analyzer_2024 = MultiDashboardAnalyzer(year=2024)
+analyzer_2024.run_all_dashboards()
 ```
 
-### 📈 **Basic Sales Analysis**
+**Generated Files:**
+- `dashboard_1_temporal_trends_YEAR.png`
+- `dashboard_2_product_performance_YEAR.png`
+- `dashboard_3_category_analysis_YEAR.png`
+- `dashboard_4_category_performance_YEAR.png`
 
+### 📈 **Single Month Analysis**
+
+**Interactive Mode (Recommended):**
+```bash
+python single_month_analyzer.py
+```
+The program will prompt you for:
+- **Year** - Press Enter to use current year or type a year (e.g., 2024)
+- **Month** - Press Enter to use current month or type a month (e.g., September)
+
+**Programmatic Mode:**
 ```python
-from sales_analyzer import SalesAnalyzer
+from single_month_analyzer import main
 
-# Initialize analyzer with your sales data
-analyzer = SalesAnalyzer("your_sales_data.csv")
-
-# Load and analyze data
-analyzer.load_data()
-
-# Generate comprehensive analysis
-analyzer.calculate_basic_metrics()
-analyzer.analyze_category_performance()
-analyzer.get_top_products("Sales", 15)
-
-# Create visualizations
-analyzer.generate_visualizations("sales_analysis.png")
-analyzer.generate_specific_category_analysis("category_analysis.png")
-
-# Generate comprehensive report
-analyzer.generate_comprehensive_report("report.txt")
+# Analyze specific month
+analyzer = main(year=2024, month="September")
 ```
+
+**Generated Files:**
+- `sales_analysis_YEAR_MONTH.png` - General visualizations
+- `category_analysis_YEAR_MONTH.png` - Category-specific analysis
+- `sales_report_YEAR_MONTH.txt` - Complete report
 
 ### 🚀 **Command Line Usage**
 
 ```bash
-# Run predictive analytics (NEW!)
-python sales_predictor.py
+# Multi-year sales forecasting (ML-based)
+python multi_year_sales_predictor.py
 
-# Run multi-dashboard analysis
-python multi_dashboard_analysis.py
+# Current year dashboard (2025)
+python current_year_dashboard.py
 
-# Run basic sales analysis
-python sales_analyzer.py
+# Dashboard for specific year (e.g., 2024)
+python -c "from current_year_dashboard import main; main(2024)"
+
+# Single month analysis (interactive - uses current month by default)
+python single_month_analyzer.py
 ```
 
 ## 📁 Project Structure
 
 ```
 berlin-project/
-├── sales_predictor.py            # 🔮 Predictive analytics & forecasting (NEW!)
-├── multi_dashboard_analysis.py   # 🎯 Multi-dashboard analytics system
-├── sales_analyzer.py             # 📊 Basic sales analysis module
-├── requirements.txt              # 📋 Python dependencies
-├── .gitignore                   # 🔒 Git ignore rules (protects confidential data)
-├── README.md                    # 📖 This documentation
-└── data/                        # 📁 Data directory (not tracked)
-    └── sample_data_structure.md # 📝 Data format documentation
+├── multi_year_sales_predictor.py  # 🚀 Multi-year ML forecasting (2023-2025)
+├── current_year_dashboard.py      # 📊 Year-specific dashboard generator
+├── single_month_analyzer.py       # 📈 Single month deep-dive analysis
+├── requirements.txt               # 📋 Python dependencies
+├── .gitignore                     # 🔒 Git ignore rules
+├── README.md                      # 📖 This documentation
+├── PROJECT_STRUCTURE.md           # 📝 Project structure guide
+└── data/                          # 📁 Sample data structure info
+    └── sample_data_structure.md
 ```
 
-### 🗂️ **Data Structure (Not Tracked)**
+### 🗂️ **Data Structure** (Confidential - Not Tracked)
 ```
-reports/                         # 📊 Monthly sales data (confidential)
-├── January/
-│   └── report-sales_takings-item_sold.csv
-├── February/
-│   └── report-sales_takings-item_sold.csv
-├── March/
-│   └── report-sales_takings-item_sold.csv
-└── ...                         # Additional months
+reports/
+├── 2023/                      # Full year 2023
+│   ├── January/
+│   │   └── report-sales_takings-item_sold.csv
+│   ├── February/
+│   │   └── report-sales_takings-item_sold.csv
+│   └── ...                   # All 12 months
+├── 2024/                      # Full year 2024
+│   ├── January/
+│   │   └── report-sales_takings-item_sold.csv
+│   └── ...                   # All 12 months
+└── 2025/                      # Current year (partial)
+    ├── January/
+    │   └── report-sales_takings-item_sold.csv
+    └── ...                   # Available months
 ```
 
 ## 🔧 Getting Started
@@ -192,13 +197,15 @@ The system expects CSV files with the following structure:
 
 ## 🎯 Features Overview
 
-### 🔮 **Predictive Analytics Dashboard**
-- **Monthly Sales Forecast**: Predict sales for the next 1-12 months using ML models
-- **Product Demand Prediction**: Forecast demand for top products with trend indicators
-- **Seasonal Performance**: Analyze seasonal patterns specific to Melbourne
-- **Historical vs Predicted**: Visual comparison with confidence indicators
-- **Model Accuracy Metrics**: MAE, RMSE, and R² scores for transparency
-- **Business Insights**: Actionable recommendations based on predictions
+### 🚀 **Multi-Year Sales Forecasting Features**
+- **3 Years of Data**: Leverage 2023-2025 for superior pattern recognition
+- **6-Panel Dashboard**: Sales forecast, YoY comparison, monthly patterns, model performance, feature importance, seasonal heatmap
+- **4 ML Models**: XGBoost, Gradient Boosting, Random Forest, Ridge Regression (auto-selection)
+- **Advanced Features**: 15+ engineered features including lags, rolling stats, YoY growth
+- **Confidence Intervals**: Statistical uncertainty ranges for each prediction
+- **Time Series CV**: Proper temporal validation (no data leakage)
+- **Model Metrics**: MAE, RMSE, R², MAPE for transparency
+- **Business Insights**: Automated recommendations based on historical patterns
 
 ### 📊 **Dashboard 1: Temporal Trends & Growth**
 - **Monthly Sales Trends**: Track performance over time with seasonal insights (Melbourne seasons)

@@ -1,14 +1,39 @@
 """
-Sales Data Analysis Module for Berlin Project
+Single Month Sales Analysis Module for Berlin Project
+=====================================================
 
-This module provides comprehensive analysis of sales data including:
+This module provides comprehensive analysis of sales data for a single month including:
 - Exploratory data analysis (EDA)
 - Performance metrics calculation
 - Visualization generation
 - Business insights extraction
 
+Data Structure:
+--------------
+Expects data in: reports/YEAR/MONTH/report-sales_takings-item_sold.csv
+
+Typical Usage:
+-------------
+    # Interactive mode (recommended) - uses current month by default
+    python single_month_analyzer.py
+    
+    # The program will prompt:
+    # Year [2025]: 2024
+    # Month [October]: September
+    
+    # Programmatic mode
+    from single_month_analyzer import main
+    analyzer = main(year=2024, month="April")
+
+Features:
+--------
+- Interactive prompts for year and month
+- Automatic detection of current month/year as defaults
+- Press Enter to use defaults (no typing needed for current month)
+- Error handling with helpful messages if data not found
+
 Author: Daniel Montes
-Date: 2025-09-17
+Date: 2025-10-15
 """
 
 import pandas as pd
@@ -260,10 +285,10 @@ class SalesAnalyzer:
 
         # Price range analysis
         price_ranges = [
-            (0, 10, "Low ($0-10)"),
-            (10, 20, "Medium ($10-20)"),
-            (20, 30, "High ($20-30)"),
-            (30, 100, "Premium ($30+)"),
+            (0, 20, "Budget ($0-20)"),
+            (20, 30, "Mid-Range ($20-30)"),
+            (30, 50, "Premium ($30-50)"),
+            (50, 5000, "Luxury ($50+)"),
         ]
 
         range_analysis: Dict[str, Dict[str, Union[int, float]]] = {}
@@ -751,22 +776,47 @@ class SalesAnalyzer:
         return report_text
 
 
-def main() -> SalesAnalyzer:
+def main(year: int = 2025, month: str = "September") -> SalesAnalyzer:
     """
-    Main function to execute comprehensive sales analysis.
+    Main function to execute comprehensive sales analysis for a specific month.
 
     This function demonstrates the complete workflow of the SalesAnalyzer class,
     including data loading, analysis, visualization, and report generation.
+    
+    Parameters:
+    -----------
+    year : int
+        Year to analyze (default: 2025)
+    month : str
+        Month to analyze (default: "September")
 
     Returns:
-        SalesAnalyzer instance with completed analysis
+    --------
+    SalesAnalyzer instance with completed analysis
+    
+    Example Usage:
+    -------------
+    # Analyze September 2025
+    analyzer = main(2025, "September")
+    
+    # Analyze April 2024
+    analyzer = main(2024, "April")
     """
-    print(">> STARTING COMPREHENSIVE SALES ANALYSIS")
+    print(f">> STARTING SALES ANALYSIS FOR {month} {year}")
     print("=" * 60)
 
     try:
+        # Build path to CSV file with new structure
+        csv_path = Path(f"reports/{year}/{month}/report-sales_takings-item_sold.csv")
+        
+        if not csv_path.exists():
+            print(f"❌ ERROR: File not found: {csv_path}")
+            print(f"\nAvailable structure should be:")
+            print(f"   reports/{year}/{month}/report-sales_takings-item_sold.csv")
+            raise FileNotFoundError(f"Data file not found: {csv_path}")
+        
         # Initialize analyzer
-        analyzer = SalesAnalyzer("report-sales_takings-item_sold.csv")
+        analyzer = SalesAnalyzer(csv_path)
 
         # Load and analyze data
         analyzer.load_data()
@@ -782,31 +832,64 @@ def main() -> SalesAnalyzer:
         analyzer.analyze_price_distribution()
         analyzer.identify_business_patterns()
 
-        # Generate visualizations
-        analyzer.generate_visualizations(Path("sales_analysis.png"))
+        # Generate visualizations with descriptive names
+        month_label = f"{year}_{month}"
+        analyzer.generate_visualizations(Path(f"sales_analysis_{month_label}.png"))
 
         # Generate specific category analysis
         analyzer.generate_specific_category_analysis(
-            Path("specific_category_analysis.png")
+            Path(f"category_analysis_{month_label}.png")
         )
 
         # Generate comprehensive report
-        analyzer.generate_comprehensive_report(Path("comprehensive_sales_report.txt"))
+        analyzer.generate_comprehensive_report(Path(f"sales_report_{month_label}.txt"))
 
-        print("\n>> COMPREHENSIVE ANALYSIS COMPLETED!")
+        print(f"\n>> ANALYSIS COMPLETED FOR {month} {year}!")
         print(">> Generated Files:")
-        print("   • sales_analysis.png - General visualizations")
-        print(
-            "   • specific_category_analysis.png - Beer, Signature Cocktails & Happy Hour analysis"
-        )
-        print("   • comprehensive_sales_report.txt - Complete report")
+        print(f"   • sales_analysis_{month_label}.png - General visualizations")
+        print(f"   • category_analysis_{month_label}.png - Category-specific analysis")
+        print(f"   • sales_report_{month_label}.txt - Complete report")
 
         return analyzer
 
+    except FileNotFoundError as e:
+        print(f"❌ File Error: {e}")
+        raise
     except Exception as e:
         print(f"❌ Error during analysis: {e}")
         raise
 
 
 if __name__ == "__main__":
-    analyzer = main()
+    # Interactive mode: ask user for year and month
+    from datetime import datetime
+    
+    print("\n" + "=" * 60)
+    print("SINGLE MONTH SALES ANALYZER")
+    print("=" * 60)
+    
+    # Get current date as default
+    current_date = datetime.now()
+    current_year = current_date.year
+    current_month = current_date.strftime("%B")  # Full month name (e.g., "October")
+    
+    print(f"\nCurrent date: {current_month} {current_year}")
+    print("Press Enter to use current month or specify year and month.")
+    
+    # Ask for year
+    year_input = input(f"\nYear [{current_year}]: ").strip()
+    year = int(year_input) if year_input else current_year
+    
+    # Ask for month
+    month_input = input(f"Month [{current_month}]: ").strip()
+    month = month_input if month_input else current_month
+    
+    # Capitalize first letter if needed
+    if month:
+        month = month.capitalize()
+    
+    print(f"\n📊 Analyzing: {month} {year}")
+    print("=" * 60 + "\n")
+    
+    # Run analysis
+    analyzer = main(year=year, month=month)

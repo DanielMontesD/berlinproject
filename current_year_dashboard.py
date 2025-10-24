@@ -74,7 +74,7 @@ class MultiDashboardAnalyzer:
     # Generates 4 PNG files with thematic dashboards
     """
 
-    def __init__(self):
+    def __init__(self, year: int = 2025):
         """
         Initialize the multi-dashboard analyzer.
 
@@ -83,7 +83,13 @@ class MultiDashboardAnalyzer:
         - Consolidated data from all months
         - Analysis results to avoid recalculations
         - List of months with available data
+        
+        Parameters:
+        -----------
+        year : int
+            Year to analyze (default: 2025 - current year)
         """
+        self.year = year
         self.monthly_data: Dict[str, pd.DataFrame] = {}
         self.consolidated_data: Optional[pd.DataFrame] = None
         self.analysis_results: Dict[str, any] = {}
@@ -121,10 +127,16 @@ class MultiDashboardAnalyzer:
         - Creates self.consolidated_data with all data combined
         - Prints progress messages showing which months were loaded successfully
         """
-        print(">> Loading data for multi-dashboard analysis...")
+        print(f">> Loading data for {self.year} dashboard analysis...")
 
         # Define the path to reports and all possible months
-        reports_dir = Path("reports")
+        reports_dir = Path("reports") / str(self.year)
+        
+        if not reports_dir.exists():
+            print(f"   ❌ ERROR: Year directory {self.year} not found in reports/")
+            print(f"   Please check that reports/{self.year}/ exists")
+            return
+        
         months = [
             "January",
             "February",
@@ -178,6 +190,7 @@ class MultiDashboardAnalyzer:
                     df = df.dropna(subset=["Sales"])
 
                     # Add temporal metadata for analysis
+                    df["Year"] = self.year
                     df["Month"] = month
                     df["Month_Number"] = months.index(month) + 1  # 1-12 for Jan-Dec
                     df["Quarter"] = (df["Month_Number"] - 1) // 3 + 1  # Q1-Q4
@@ -211,7 +224,7 @@ class MultiDashboardAnalyzer:
                     # Store the processed data and track this month as available
                     self.monthly_data[month] = df
                     self.available_months.append(month)
-                    print(f"    OK {month}: {len(df)} items")
+                    print(f"    OK {self.year}-{month}: {len(df)} items, ${df['Sales'].sum():,.2f}")
 
                 except Exception as e:
                     print(f"    ERROR loading {month}: {e}")
@@ -220,10 +233,12 @@ class MultiDashboardAnalyzer:
             self.consolidated_data = pd.concat(
                 self.monthly_data.values(), ignore_index=True
             )
+            total_sales = self.consolidated_data['Sales'].sum()
             print(
-                f">> Total: {len(self.monthly_data)} months, {len(self.consolidated_data)} records"
+                f"\n>> Total {self.year}: {len(self.monthly_data)} months, "
+                f"{len(self.consolidated_data)} records, ${total_sales:,.2f}"
             )
-            print(f">> Available months: {', '.join(self.available_months)}")
+            print(f">> Period: {self.available_months[0]} to {self.available_months[-1]}")
 
     def create_temporal_trends_dashboard(self) -> None:
         """
@@ -263,7 +278,7 @@ class MultiDashboardAnalyzer:
 
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle(
-            "Dashboard 1: Temporal Trends & Growth Analysis",
+            f"Dashboard 1: Temporal Trends & Growth Analysis - {self.year}",
             fontsize=18,
             fontweight="bold",
         )
@@ -407,8 +422,9 @@ class MultiDashboardAnalyzer:
             )
 
         plt.tight_layout()
-        plt.savefig("dashboard_1_temporal_trends.png", dpi=300, bbox_inches="tight")
-        print("OK Dashboard 1 saved as 'dashboard_1_temporal_trends.png'")
+        filename = f"dashboard_1_temporal_trends_{self.year}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
+        print(f"OK Dashboard 1 saved as '{filename}'")
         plt.show()
 
     def create_product_performance_dashboard(self) -> None:
@@ -446,7 +462,7 @@ class MultiDashboardAnalyzer:
         # Create figure with proper gridspec from start
         fig = plt.figure(figsize=(16, 12))
         fig.suptitle(
-            "Dashboard 2: Product Performance Analysis",
+            f"Dashboard 2: Product Performance Analysis - {self.year}",
             fontsize=18,
             fontweight="bold",
             y=0.95,
@@ -568,8 +584,9 @@ class MultiDashboardAnalyzer:
         )
         ax_bottom_right.legend()
 
-        plt.savefig("dashboard_2_product_performance.png", dpi=300, bbox_inches="tight")
-        print("OK Dashboard 2 saved as 'dashboard_2_product_performance.png'")
+        filename = f"dashboard_2_product_performance_{self.year}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
+        print(f"OK Dashboard 2 saved as '{filename}'")
         plt.show()
 
     def create_category_analysis_dashboard(self) -> None:
@@ -581,7 +598,7 @@ class MultiDashboardAnalyzer:
 
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle(
-            "Dashboard 3: Category & Menu Section Analysis",
+            f"Dashboard 3: Category & Menu Section Analysis - {self.year}",
             fontsize=18,
             fontweight="bold",
         )
@@ -753,8 +770,9 @@ class MultiDashboardAnalyzer:
             axes[1, 1].tick_params(axis="y", labelsize=8)
 
         plt.tight_layout()
-        plt.savefig("dashboard_3_category_analysis.png", dpi=300, bbox_inches="tight")
-        print("OK Dashboard 3 saved as 'dashboard_3_category_analysis.png'")
+        filename = f"dashboard_3_category_analysis_{self.year}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
+        print(f"OK Dashboard 3 saved as '{filename}'")
         plt.show()
 
     def create_business_metrics_dashboard(self) -> None:
@@ -766,7 +784,9 @@ class MultiDashboardAnalyzer:
 
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle(
-            "Dashboard 4: Category Performance Analysis", fontsize=18, fontweight="bold"
+            f"Dashboard 4: Category Performance Analysis - {self.year}", 
+            fontsize=18, 
+            fontweight="bold"
         )
 
         # Order months chronologically for all graphs
@@ -972,10 +992,9 @@ class MultiDashboardAnalyzer:
         axes[1, 1].tick_params(axis="x", rotation=45)
 
         plt.tight_layout()
-        plt.savefig(
-            "dashboard_4_category_performance.png", dpi=300, bbox_inches="tight"
-        )
-        print("OK Dashboard 4 saved as 'dashboard_4_category_performance.png'")
+        filename = f"dashboard_4_category_performance_{self.year}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
+        print(f"OK Dashboard 4 saved as '{filename}'")
         plt.show()
 
     def run_all_dashboards(self) -> None:
@@ -1015,7 +1034,7 @@ class MultiDashboardAnalyzer:
         None
             Method produces files and console output only
         """
-        print(">> Creating Multiple Focused Dashboards (Dynamic Version)")
+        print(f">> Creating {self.year} Focused Dashboards")
         print("=" * 70)
 
         # Step 1: Load and process all available monthly data
@@ -1034,43 +1053,52 @@ class MultiDashboardAnalyzer:
         self.create_business_metrics_dashboard()  # KPIs and business metrics
 
         # Step 4: Display completion summary
-        print("\n>> All dashboards created successfully!")
+        print(f"\n>> All {self.year} dashboards created successfully!")
         print("Generated files:")
-        print("  - dashboard_1_temporal_trends.png - Trends & Growth")
-        print("  - dashboard_2_product_performance.png - Product Analysis")
-        print("  - dashboard_3_category_analysis.png - Categories & Sections")
-        print("  - dashboard_4_category_performance.png - Category Performance")
-        print(f"\n>> Data period: {', '.join(self.available_months)}")
+        print(f"  - dashboard_1_temporal_trends_{self.year}.png - Trends & Growth")
+        print(f"  - dashboard_2_product_performance_{self.year}.png - Product Analysis")
+        print(f"  - dashboard_3_category_analysis_{self.year}.png - Categories & Sections")
+        print(f"  - dashboard_4_category_performance_{self.year}.png - Category Performance")
+        print(f"\n>> Data period: {self.available_months[0]} to {self.available_months[-1]} {self.year}")
 
 
-def main():
+def main(year: int = 2025):
     """
     Main execution function for the multi-dashboard analysis.
 
     This function serves as the entry point when the script is run directly.
-    It creates an analyzer instance and executes the complete dashboard workflow.
+    It creates an analyzer instance for the specified year and executes 
+    the complete dashboard workflow.
+
+    Parameters:
+    -----------
+    year : int
+        Year to analyze (default: 2025 - current year)
 
     Usage:
     ------
-    Can be called directly from command line:
-        python multi_dashboard_analysis.py
+    From command line (current year):
+        python current_year_dashboard.py
+
+    For specific year:
+        python -c "from current_year_dashboard import main; main(2024)"
 
     Or imported and called from other scripts:
-        from multi_dashboard_analysis import main
-        main()
+        from current_year_dashboard import main
+        main(2024)
 
     Side Effects:
     ------------
     - Creates 4 PNG dashboard files in the current directory
     - Prints progress and summary information to console
-    - Processes all available monthly data from reports/ directory
+    - Processes all available monthly data from reports/YEAR/ directory
 
     Returns:
     --------
     None
     """
-    # Create analyzer instance and run complete workflow
-    analyzer = MultiDashboardAnalyzer()
+    # Create analyzer instance for specified year and run complete workflow
+    analyzer = MultiDashboardAnalyzer(year=year)
     analyzer.run_all_dashboards()
 
 

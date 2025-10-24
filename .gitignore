@@ -9,12 +9,18 @@ report-sales_takings-item_sold.csv
 *.jpg
 *.jpeg
 *.pdf
-comprehensive_sales_report.txt
-sales_analysis.png
-specific_category_analysis.png
-sales_predictions_report.txt
-sales_predictions.png
-dashboard_*.png
+
+# Multi-Year Predictor Outputs
+multi_year_forecast.png
+multi_year_forecast_report.txt
+
+# Year-Specific Dashboard Outputs
+dashboard_*_202*.png
+
+# Single Month Analysis Outputs
+sales_analysis_*.png
+category_analysis_*.png
+sales_report_*.txt
 
 # Python
 __pycache__/
