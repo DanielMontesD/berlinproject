@@ -49,7 +49,15 @@ from sklearn.metrics import (
     mean_absolute_percentage_error,
 )
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler
 import xgboost as xgb
+from utils import (
+    MONTHS,
+    SEASON_MAP,
+    PRICE_BINS,
+    PRICE_LABELS,
+    load_and_clean_sales_data,
+)
 
 warnings.filterwarnings("ignore")
 plt.style.use("seaborn-v0_8")
@@ -105,20 +113,8 @@ class AdvancedSalesPredictor:
         print(f">> Target years: {years}")
 
         reports_dir = Path("reports")
-        months = [
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ]
+        reports_dir = Path("reports")
+        months = MONTHS
 
         total_records = 0
 
@@ -137,32 +133,8 @@ class AdvancedSalesPredictor:
 
                 if csv_file.exists():
                     try:
-                        df = pd.read_csv(csv_file, skiprows=1)
-
-                        # Standardize columns
-                        df.columns = [
-                            "Menu Section",
-                            "Menu Item",
-                            "Size",
-                            "Portion",
-                            "Category",
-                            "Unit Price",
-                            "Quantity",
-                            "Sales",
-                            "% of Sales",
-                        ]
-
-                        # Clean numeric columns
-                        for col in ["Unit Price", "Quantity", "Sales"]:
-                            df[col] = (
-                                df[col]
-                                .astype(str)
-                                .str.replace("$", "")
-                                .str.replace(",", "")
-                            )
-                            df[col] = pd.to_numeric(df[col], errors="coerce")
-
-                        df = df.dropna(subset=["Sales"])
+                        # Use shared utility to load and clean data
+                        df = load_and_clean_sales_data(csv_file)
 
                         # Add temporal features
                         df["Year"] = year
@@ -174,27 +146,13 @@ class AdvancedSalesPredictor:
                         df["Date"] = pd.to_datetime(f"{year}-{month_idx:02d}-01")
 
                         # Add Melbourne seasons
-                        season_map = {
-                            1: "Summer",
-                            2: "Summer",
-                            3: "Autumn",
-                            4: "Autumn",
-                            5: "Autumn",
-                            6: "Winter",
-                            7: "Winter",
-                            8: "Winter",
-                            9: "Spring",
-                            10: "Spring",
-                            11: "Spring",
-                            12: "Summer",
-                        }
-                        df["Season"] = df["Month_Number"].map(season_map)
+                        df["Season"] = df["Month_Number"].map(SEASON_MAP)
 
                         # Price categories
                         df["Price_Category"] = pd.cut(
                             df["Unit Price"],
-                            bins=[0, 20, 30, 50, np.inf],
-                            labels=["Budget", "Mid-Range", "Premium", "Luxury"],
+                            bins=PRICE_BINS,
+                            labels=PRICE_LABELS,
                         )
 
                         self.yearly_data[year][month] = df
@@ -575,21 +533,7 @@ class AdvancedSalesPredictor:
             ].mean()
 
             # Add season dummies
-            season_map = {
-                1: "Summer",
-                2: "Summer",
-                3: "Autumn",
-                4: "Autumn",
-                5: "Autumn",
-                6: "Winter",
-                7: "Winter",
-                8: "Winter",
-                9: "Spring",
-                10: "Spring",
-                11: "Spring",
-                12: "Summer",
-            }
-            future_season = season_map[future_month]
+            future_season = SEASON_MAP[future_month]
 
             for season in ["Summer", "Autumn", "Winter", "Spring"]:
                 future_features[f"Season_{season}"] = (

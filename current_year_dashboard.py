@@ -36,6 +36,13 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import warnings
 from datetime import datetime
+from utils import (
+    MONTHS,
+    SEASON_MAP,
+    PRICE_BINS,
+    PRICE_LABELS,
+    load_and_clean_sales_data,
+)
 
 warnings.filterwarnings("ignore")
 plt.style.use("seaborn-v0_8")
@@ -137,20 +144,7 @@ class MultiDashboardAnalyzer:
             print(f"   Please check that reports/{self.year}/ exists")
             return
 
-        months = [
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ]
+        months = MONTHS
 
         # Iterate through all possible months to find available data
         for month in months:
@@ -160,34 +154,8 @@ class MultiDashboardAnalyzer:
             # Only process months that have data files
             if csv_file.exists():
                 try:
-                    # Load CSV, skipping first row which contains "Item Sold Report"
-                    df = pd.read_csv(csv_file, skiprows=1)
-
-                    # Standardize column names to ensure consistency
-                    df.columns = [
-                        "Menu Section",
-                        "Menu Item",
-                        "Size",
-                        "Portion",
-                        "Category",
-                        "Unit Price",
-                        "Quantity",
-                        "Sales",
-                        "% of Sales",
-                    ]
-
-                    # Clean numeric columns - remove $ signs and commas, convert to numbers
-                    for col in ["Unit Price", "Quantity", "Sales"]:
-                        df[col] = (
-                            df[col]
-                            .astype(str)
-                            .str.replace("$", "")
-                            .str.replace(",", "")
-                        )
-                        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-                    # Remove any rows where sales data is missing/invalid
-                    df = df.dropna(subset=["Sales"])
+                    # Use shared utility to load and clean data
+                    df = load_and_clean_sales_data(csv_file)
 
                     # Add temporal metadata for analysis
                     df["Year"] = self.year
@@ -196,29 +164,13 @@ class MultiDashboardAnalyzer:
                     df["Quarter"] = (df["Month_Number"] - 1) // 3 + 1  # Q1-Q4
 
                     # Add Melbourne seasons (Southern Hemisphere - opposite to Northern)
-                    # Summer: Dec-Feb, Autumn: Mar-May, Winter: Jun-Aug, Spring: Sep-Nov
-                    season_map = {
-                        1: "Summer",
-                        2: "Summer",
-                        3: "Autumn",
-                        4: "Autumn",
-                        5: "Autumn",
-                        6: "Winter",
-                        7: "Winter",
-                        8: "Winter",
-                        9: "Spring",
-                        10: "Spring",
-                        11: "Spring",
-                        12: "Summer",
-                    }
-                    df["Season"] = df["Month_Number"].map(season_map)
+                    df["Season"] = df["Month_Number"].map(SEASON_MAP)
 
                     # Categorize products by price for analysis
-                    # Budget: $0-20, Mid-Range: $20-30, Premium: $30-50, Luxury: $50+
                     df["Price_Category"] = pd.cut(
                         df["Unit Price"],
-                        bins=[0, 20, 30, 50, np.inf],
-                        labels=["Budget", "Mid-Range", "Premium", "Luxury"],
+                        bins=PRICE_BINS,
+                        labels=PRICE_LABELS,
                     )
 
                     # Store the processed data and track this month as available
@@ -738,20 +690,7 @@ class MultiDashboardAnalyzer:
         )
 
         # Order months chronologically
-        month_order = [
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ]
+        month_order = MONTHS
         available_month_order = [
             month for month in month_order if month in section_monthly.index
         ]
@@ -794,20 +733,7 @@ class MultiDashboardAnalyzer:
         )
 
         # Order months chronologically for all graphs
-        month_order = [
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ]
+        month_order = MONTHS
         available_month_order = [
             month for month in month_order if month in self.available_months
         ]

@@ -43,6 +43,11 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 import warnings
 from pathlib import Path
+from utils import (
+    PRICE_BINS,
+    PRICE_LABELS,
+    load_and_clean_sales_data,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -96,31 +101,12 @@ class SalesAnalyzer:
         try:
             print(">> Loading sales data...")
 
-            # Load CSV skipping the title row
-            self.raw_data = pd.read_csv(self.csv_file_path, skiprows=1)
+            # Use shared utility to load and clean data
+            self.clean_data = load_and_clean_sales_data(self.csv_file_path)
+            self.raw_data = self.clean_data  # Keep compatibility if raw_data is accessed
 
-            print(f"OK Data loaded: {len(self.raw_data)} products")
-            print(f">> Available columns: {list(self.raw_data.columns)}")
-
-            # Clean numeric columns
-            self.raw_data["Unit Price"] = (
-                self.raw_data["Unit Price"]
-                .str.replace("$", "", regex=False)
-                .astype(float)
-            )
-            self.raw_data["Sales"] = (
-                self.raw_data["Sales"].str.replace("$", "", regex=False).astype(float)
-            )
-            self.raw_data["% of Sales"] = (
-                self.raw_data["% of Sales"]
-                .str.replace("%", "", regex=False)
-                .astype(float)
-            )
-
-            # Filter only sold products (exclude totals and zero quantities)
-            self.clean_data = self.raw_data[self.raw_data["Quantity"] > 0].copy()
-
-            print(f"OK Clean data: {len(self.clean_data)} products with sales")
+            print(f"OK Data loaded: {len(self.clean_data)} products")
+            print(f">> Available columns: {list(self.clean_data.columns)}")
 
             return self.clean_data
 
@@ -283,19 +269,16 @@ class SalesAnalyzer:
             "std_price": float(prices.std()),
         }
 
-        # Price range analysis
-        price_ranges = [
-            (0, 20, "Budget ($0-20)"),
-            (20, 30, "Mid-Range ($20-30)"),
-            (30, 50, "Premium ($30-50)"),
-            (50, 5000, "Luxury ($50+)"),
-        ]
+        # Price range analysis using shared constants
+        data["Price_Category"] = pd.cut(
+            data["Unit Price"], bins=PRICE_BINS, labels=PRICE_LABELS
+        )
 
         range_analysis: Dict[str, Dict[str, Union[int, float]]] = {}
-        for min_price, max_price, label in price_ranges:
-            products_in_range = data[
-                (data["Unit Price"] >= min_price) & (data["Unit Price"] < max_price)
-            ]
+        
+        # Group by the new category
+        for label in PRICE_LABELS:
+            products_in_range = data[data["Price_Category"] == label]
             range_sales = products_in_range["Sales"].sum()
             range_analysis[label] = {
                 "product_count": len(products_in_range),
