@@ -813,7 +813,7 @@ class AdvancedSalesPredictor:
 
             years = list(yearly_sales.keys())
             sales = list(yearly_sales.values())
-            colors = ["#457B9D", "#2A9D8F", "#E76F51"][: len(years)]
+            colors = ["#457B9D", "#2A9D8F", "#E76F51", "#9B59B6"][: len(years)]
 
             bars = ax4.bar(years, sales, color=colors, alpha=0.8, width=0.6)
 
@@ -854,6 +854,11 @@ class AdvancedSalesPredictor:
             )
             ax4.set_ylabel("Total Sales ($)", fontsize=11)
             ax4.set_xlabel("Year", fontsize=11)
+            
+            # Fix x-axis to show only integer years
+            ax4.set_xticks(years)
+            ax4.set_xticklabels([int(year) for year in years])
+            
             ax4.grid(True, alpha=0.3, axis="y")
 
         # 5. Model Performance Comparison (Bottom Right)
@@ -1164,7 +1169,7 @@ def main():
     Main execution function for advanced sales prediction.
     """
     predictor = AdvancedSalesPredictor()
-    predictor.run_complete_analysis(years=[2023, 2024, 2025], forecast_months=3)
+    predictor.run_complete_analysis(years=[2023, 2024, 2025, 2026], forecast_months=3)
 
 
 if __name__ == "__main__":

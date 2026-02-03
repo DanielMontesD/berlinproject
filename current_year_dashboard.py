@@ -264,18 +264,19 @@ class MultiDashboardAnalyzer:
         )
         axes[0, 0].fill_between(months_short, sales_values, alpha=0.3, color="#2E86AB")
 
-        # Add trend line
-        x_numeric = range(len(sales_values))
-        z = np.polyfit(x_numeric, sales_values, 1)
-        p = np.poly1d(z)
-        axes[0, 0].plot(
-            months_short,
-            p(x_numeric),
-            "--",
-            color="red",
-            linewidth=2,
-            label=f"Trend {'↗️' if z[0] > 0 else '↘️'}",
-        )
+        # Add trend line (only if we have 2+ months of data)
+        if len(sales_values) >= 2:
+            x_numeric = range(len(sales_values))
+            z = np.polyfit(x_numeric, sales_values, 1)
+            p = np.poly1d(z)
+            axes[0, 0].plot(
+                months_short,
+                p(x_numeric),
+                "--",
+                color="red",
+                linewidth=2,
+                label=f"Trend {'↗️' if z[0] > 0 else '↘️'}",
+            )
 
         axes[0, 0].set_title("Monthly Sales Trend", fontsize=14, fontweight="bold")
         axes[0, 0].set_ylabel("Sales ($)")
@@ -295,32 +296,45 @@ class MultiDashboardAnalyzer:
             )
 
         # 2. Month-over-Month Growth Rate
-        growth_rates = [
-            ((sales_values[i] - sales_values[i - 1]) / sales_values[i - 1] * 100)
-            for i in range(1, len(sales_values))
-        ]
-        growth_months = months_short[1:]
-        colors = ["green" if x >= 0 else "red" for x in growth_rates]
+        if len(sales_values) >= 2:
+            growth_rates = [
+                ((sales_values[i] - sales_values[i - 1]) / sales_values[i - 1] * 100)
+                for i in range(1, len(sales_values))
+            ]
+            growth_months = months_short[1:]
+            colors = ["green" if x >= 0 else "red" for x in growth_rates]
 
-        bars = axes[0, 1].bar(growth_months, growth_rates, color=colors, alpha=0.7)
-        axes[0, 1].set_title(
-            "Month-over-Month Growth Rate", fontsize=14, fontweight="bold"
-        )
-        axes[0, 1].set_ylabel("Growth Rate (%)")
-        axes[0, 1].axhline(y=0, color="black", linestyle="-", alpha=0.5)
-        axes[0, 1].grid(True, alpha=0.3)
-        axes[0, 1].tick_params(axis="x", rotation=45)
+            bars = axes[0, 1].bar(growth_months, growth_rates, color=colors, alpha=0.7)
+            axes[0, 1].set_title(
+                "Month-over-Month Growth Rate", fontsize=14, fontweight="bold"
+            )
+            axes[0, 1].set_ylabel("Growth Rate (%)")
+            axes[0, 1].axhline(y=0, color="black", linestyle="-", alpha=0.5)
+            axes[0, 1].grid(True, alpha=0.3)
+            axes[0, 1].tick_params(axis="x", rotation=45)
 
-        # Add value labels
-        for bar, rate in zip(bars, growth_rates):
-            height = bar.get_height()
-            axes[0, 1].annotate(
-                f"{rate:.1f}%",
-                xy=(bar.get_x() + bar.get_width() / 2, height),
-                xytext=(0, 3 if height >= 0 else -15),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
+            # Add value labels
+            for bar, rate in zip(bars, growth_rates):
+                height = bar.get_height()
+                axes[0, 1].annotate(
+                    f"{rate:.1f}%",
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3 if height >= 0 else -15),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                )
+        else:
+            # Not enough data for growth rate
+            axes[0, 1].text(
+                0.5, 0.5,
+                "Insufficient data\n(Need 2+ months)",
+                ha="center", va="center",
+                transform=axes[0, 1].transAxes,
+                fontsize=12
+            )
+            axes[0, 1].set_title(
+                "Month-over-Month Growth Rate", fontsize=14, fontweight="bold"
             )
 
         # 3. Sales vs Quantity Correlation
@@ -998,7 +1012,7 @@ class MultiDashboardAnalyzer:
         )
 
 
-def main(year: int = 2025):
+def main(year: int = 2026):
     """
     Main execution function for the multi-dashboard analysis.
 
@@ -1009,7 +1023,7 @@ def main(year: int = 2025):
     Parameters:
     -----------
     year : int
-        Year to analyze (default: 2025 - current year)
+        Year to analyze (default: 2026 - current year)
 
     Usage:
     ------
