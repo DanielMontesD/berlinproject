@@ -5,7 +5,7 @@
 ```
 berlin-project/
 ├── multi_year_sales_predictor.py   # Multi-year ML forecasting (2023-2025)
-├── current_year_dashboard.py       # Year-specific dashboard generator  
+├── current_year_dashboard.py       # Year-specific dashboard generator (5 dashboards)
 ├── single_month_analyzer.py        # Single month deep-dive analysis
 ├── requirements.txt                # Python dependencies
 ├── README.md                       # Main documentation
@@ -18,7 +18,9 @@ berlin-project/
     │   └── ...                     # All months
     ├── 2024/                       # Full year 2024
     │   └── ...                     # All months
-    └── 2025/                       # Current year (partial)
+    ├── 2025/                       # Full year 2025
+    │   └── ...                     # All months
+    └── 2026/                       # Current year (partial)
         └── ...                     # Available months
 ```
 
@@ -34,15 +36,28 @@ python multi_year_sales_predictor.py
 - `multi_year_forecast.png` - 5-panel ML forecast dashboard
 - `multi_year_forecast_report.txt` - Detailed forecast report with metrics
 
-### Current Year Dashboard (2025)
+### Current Year Dashboard (2026)
 ```bash
 python current_year_dashboard.py
 ```
 **Generates:**
-- `dashboard_1_temporal_trends_2025.png`
-- `dashboard_2_product_performance_2025.png`
-- `dashboard_3_category_analysis_2025.png`
-- `dashboard_4_category_performance_2025.png`
+- `dashboard_1_temporal_trends_2026.png`
+- `dashboard_2_product_performance_2026.png`
+- `dashboard_3_category_analysis_2026.png`
+- `dashboard_4_category_performance_2026.png`
+- `dashboard_5_limited_edition_2026.png`
+
+### Limited Edition Cocktail Tracker (Dashboard 5)
+```python
+from current_year_dashboard import main
+
+# Without change markers
+main(2026)
+
+# Mark when you swapped the cocktail recipe
+# → red dashed lines appear on all 4 charts in Dashboard 5
+main(2026, cocktail_change_dates=["February", "May"])
+```
 
 ### Specific Year Dashboard
 ```python

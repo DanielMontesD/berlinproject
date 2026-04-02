@@ -7,7 +7,7 @@ from a bar/restaurant in Melbourne, Australia.
 
 Purpose:
 --------
-- Replaces a single dense dashboard with 4 thematic, readable dashboards
+- Replaces a single dense dashboard with 5 thematic, readable dashboards
 - Automatically detects which months have available data (dynamic)
 - Generates professional visualizations for business analysis
 - Considers Melbourne seasons (southern hemisphere)
@@ -17,15 +17,24 @@ Generated Dashboards:
 1. Temporal Trends: Monthly trends, growth, seasonality
 2. Product Performance: Top products, consistency, Pareto analysis
 3. Category Analysis: Beverages vs food, menu sections, pricing
-4. Business Metrics: KPIs, average transactions, normalized metrics
+4. Category Performance: Top products per category tracked monthly
+5. Limited Edition Cocktail Tracker: Multi-year performance tracking
+   for the rotating "Cocktail limited edition" product, with optional
+   version-change markers to compare editions side by side.
 
 Typical Usage:
--------------~
+--------------
     analyzer = MultiDashboardAnalyzer()
     analyzer.run_all_dashboards()
 
+    # With cocktail change markers (list of (year, month_name) tuples):
+    analyzer.run_all_dashboards(
+        cocktail_change_dates=[(2024, "June"), (2025, "March")]
+    )
+
 Author: Daniel Montes
 Date: 2025-09-24
+Updated: 2026-04-02 — Added Dashboard 5: Limited Edition Cocktail Tracker
 """
 
 import pandas as pd
@@ -60,8 +69,9 @@ class MultiDashboardAnalyzer:
     -------------
     - Automatic detection of available months (no manual updates needed)
     - Considers Melbourne, Australia seasons (southern hemisphere)
-    - Generates 4 thematic dashboards instead of 1 dense dashboard
+    - Generates 5 thematic dashboards instead of 1 dense dashboard
     - Analysis of products, categories, trends, and business metrics
+    - Multi-year Limited Edition Cocktail Tracker (Dashboard 5)
 
     Attributes:
     -----------
@@ -78,7 +88,10 @@ class MultiDashboardAnalyzer:
     --------
     >>> analyzer = MultiDashboardAnalyzer()
     >>> analyzer.run_all_dashboards()
-    # Generates 4 PNG files with thematic dashboards
+    # Generates 5 PNG files with thematic dashboards
+
+    >>> # With cocktail version-change markers:
+    >>> analyzer.run_all_dashboards(cocktail_change_dates=[(2024, "June"), (2025, "March")])
     """
 
     def __init__(self, year: int = 2025):
@@ -941,30 +954,378 @@ class MultiDashboardAnalyzer:
         print(f"OK Dashboard 4 saved as '{filename}'")
         plt.show()
 
-    def run_all_dashboards(self) -> None:
+    def create_limited_edition_dashboard(
+        self,
+        product_name: str = "Cocktail limited edition",
+        change_dates: Optional[List[Tuple[int, str]]] = None,
+    ) -> None:
+        """
+        Create Dashboard 5: Limited Edition Cocktail Performance Tracker.
+
+        This dashboard provides a multi-year view of the "Cocktail limited
+        edition" product to help the team understand:
+        - How the cocktail performs month by month over its full history
+        - Whether interest is growing, stable, or declining
+        - How a new edition compares to the previous one after a swap
+
+        Since the product always keeps the same name in the POS system, the
+        team can flag version-change dates via the `change_dates` parameter.
+        Vertical marker lines will appear on every chart at those points,
+        making it easy to visually compare editions.
+
+        Charts Generated:
+        ----------------
+        1. Top-left  : Monthly Revenue ($) — all available months in self.year
+        2. Top-right : Monthly Units Sold  — all available months in self.year
+        3. Bottom-left : Month-over-Month Growth Rate (% change)
+        4. Bottom-right: % of Total Bar Sales — isolates real popularity from
+                         seasonal effects. If this % rises, the cocktail is
+                         genuinely gaining share; if it's flat while revenue
+                         rises, it's just a busier season for the bar overall.
+
+        Parameters:
+        -----------
+        product_name : str
+            Name of the product as it appears in the POS CSV files.
+            Default: "Cocktail limited edition" (case-insensitive match).
+        change_dates : list of (int, str) tuples, optional
+            List of (year, month_name) pairs marking when the cocktail
+            recipe was swapped, e.g. [(2024, "June"), (2025, "March")].
+            Vertical lines will be drawn at those points on each chart.
+
+        Output:
+        -------
+        Saves 'dashboard_5_limited_edition_YEAR.png' and displays the dashboard.
+
+        Returns:
+        --------
+        None
+        """
+        print(">>" + f" Creating Dashboard 5: Limited Edition Cocktail Tracker ({self.year})...")
+
+        if self.consolidated_data is None:
+            print("   ERROR: No data loaded. Call load_all_data() first.")
+            return
+
+        # ------------------------------------------------------------------ #
+        # 1. Extract product data from the already-loaded year (self.monthly_data)
+        # ------------------------------------------------------------------ #
+        records = []
+
+        for month in self.available_months:
+            df = self.monthly_data[month]
+            mask = df["Menu Item"].str.lower() == product_name.lower()
+            product_df = df[mask]
+            if product_df.empty:
+                continue
+            total_month_sales = df["Sales"].sum()
+            pct_of_total = (
+                (product_df["Sales"].sum() / total_month_sales * 100)
+                if total_month_sales > 0 else 0
+            )
+            records.append(
+                {
+                    "Month": month,
+                    "Month_Num": MONTHS.index(month) + 1,
+                    "Sales": product_df["Sales"].sum(),
+                    "Quantity": product_df["Quantity"].sum(),
+                    "Avg_Price": product_df["Unit Price"].mean(),
+                    "Pct_of_Total": pct_of_total,
+                }
+            )
+
+        if not records:
+            print(
+                f"   ERROR: No data found for '{product_name}' in {self.year}.\n"
+                "   Check that the product name matches exactly (case-insensitive)."
+            )
+            return
+
+        hist = pd.DataFrame(records).sort_values("Month_Num").reset_index(drop=True)
+
+        # X-axis labels: abbreviated month name only (e.g. "Jan", "Feb")
+        hist["Label"] = hist["Month"].str[:3]
+        x_labels = hist["Label"].tolist()
+        x_idx = list(range(len(hist)))
+
+        print(f"    Found {len(hist)} month(s) of data for {self.year}.")
+
+        # ------------------------------------------------------------------ #
+        # 2. Resolve change_date positions on the x-axis                      #
+        # Supports both (year, month) and plain month strings.                 #
+        # ------------------------------------------------------------------ #
+        change_x_positions = []  # float x-index values for vertical lines
+        if change_dates:
+            for entry in change_dates:
+                # Accept either (year, month) or just month string
+                if isinstance(entry, (list, tuple)) and len(entry) == 2:
+                    _, chg_month = entry  # year is ignored — single-year dashboard
+                else:
+                    chg_month = entry
+
+                match = hist[hist["Month"] == chg_month]
+                if not match.empty:
+                    change_x_positions.append(match.index[0])
+                else:
+                    # Place marker between the last month before and the change
+                    chg_num = MONTHS.index(chg_month) + 1 if chg_month in MONTHS else 0
+                    approx = hist[hist["Month_Num"] < chg_num]
+                    pos = (approx.index[-1] + 0.5) if not approx.empty else -0.5
+                    change_x_positions.append(pos)
+            print(f"    Cocktail change markers: {change_dates}")
+
+        # ------------------------------------------------------------------ #
+        # 3. Helper: draw change-date vertical lines on an axes               #
+        # ------------------------------------------------------------------ #
+        def _draw_change_lines(ax, positions, label_first_only=True):
+            for i, pos in enumerate(positions):
+                lbl = "Cocktail changed" if (i == 0 or not label_first_only) else None
+                ax.axvline(
+                    x=pos,
+                    color="#E74C3C",
+                    linestyle="--",
+                    linewidth=1.8,
+                    alpha=0.85,
+                    label=lbl,
+                    zorder=5,
+                )
+
+        # ------------------------------------------------------------------ #
+        # 4. Build figure                                                      #
+        # ------------------------------------------------------------------ #
+        fig, axes = plt.subplots(2, 2, figsize=(18, 13))
+        fig.suptitle(
+            f"Dashboard 5: '{product_name}' — Performance Tracker ({self.year})",
+            fontsize=17,
+            fontweight="bold",
+        )
+
+        accent    = "#9B59B6"   # purple — cocktail vibe
+        accent2   = "#1ABC9C"   # teal   — units
+        pos_color = "#27AE60"   # green  — positive growth
+        neg_color = "#E74C3C"   # red    — negative growth
+
+        # ── Chart 1: Monthly Revenue ──────────────────────────────────────── #
+        ax1 = axes[0, 0]
+        ax1.plot(
+            x_idx, hist["Sales"],
+            marker="o", linewidth=2.5, markersize=7,
+            color=accent, label="Monthly Sales ($)",
+        )
+        ax1.fill_between(x_idx, hist["Sales"], alpha=0.15, color=accent)
+
+        # Trend line
+        if len(x_idx) >= 2:
+            z = np.polyfit(x_idx, hist["Sales"], 1)
+            p = np.poly1d(z)
+            trend_dir = "(rising)" if z[0] > 0 else "(falling)"
+            ax1.plot(
+                x_idx, p(x_idx),
+                "--", color="red", linewidth=1.5,
+                label=f"Trend {trend_dir}",
+            )
+
+        _draw_change_lines(ax1, change_x_positions)
+        ax1.set_title("Monthly Revenue ($)", fontsize=13, fontweight="bold")
+        ax1.set_ylabel("Sales ($)")
+        ax1.set_xticks(x_idx)
+        ax1.set_xticklabels(x_labels, rotation=45, ha="right", fontsize=8)
+        ax1.legend(fontsize=8)
+        ax1.grid(True, alpha=0.3)
+
+        # Value labels (show only every label if many points)
+        step = max(1, len(x_idx) // 12)
+        for i in range(0, len(x_idx), step):
+            ax1.annotate(
+                f"${hist['Sales'].iloc[i]:,.0f}",
+                (x_idx[i], hist["Sales"].iloc[i]),
+                textcoords="offset points", xytext=(0, 8),
+                ha="center", fontsize=7, color="#2C3E50",
+            )
+
+        # ── Chart 2: Monthly Units Sold ───────────────────────────────────── #
+        ax2 = axes[0, 1]
+        ax2.plot(
+            x_idx, hist["Quantity"],
+            marker="s", linewidth=2.5, markersize=7,
+            color=accent2, label="Units Sold",
+        )
+        ax2.fill_between(x_idx, hist["Quantity"], alpha=0.15, color=accent2)
+
+        if len(x_idx) >= 2:
+            z2 = np.polyfit(x_idx, hist["Quantity"], 1)
+            p2 = np.poly1d(z2)
+            trend_dir2 = "(rising)" if z2[0] > 0 else "(falling)"
+            ax2.plot(
+                x_idx, p2(x_idx),
+                "--", color="red", linewidth=1.5,
+                label=f"Trend {trend_dir2}",
+            )
+
+        _draw_change_lines(ax2, change_x_positions)
+        ax2.set_title("Monthly Units Sold", fontsize=13, fontweight="bold")
+        ax2.set_ylabel("Units")
+        ax2.set_xticks(x_idx)
+        ax2.set_xticklabels(x_labels, rotation=45, ha="right", fontsize=8)
+        ax2.legend(fontsize=8)
+        ax2.grid(True, alpha=0.3)
+
+        for i in range(0, len(x_idx), step):
+            ax2.annotate(
+                f"{int(hist['Quantity'].iloc[i])}",
+                (x_idx[i], hist["Quantity"].iloc[i]),
+                textcoords="offset points", xytext=(0, 8),
+                ha="center", fontsize=7, color="#2C3E50",
+            )
+
+        # ── Chart 3: Month-over-Month Growth Rate (%) ─────────────────────── #
+        ax3 = axes[1, 0]
+        if len(hist) >= 2:
+            growth = [
+                ((hist["Sales"].iloc[i] - hist["Sales"].iloc[i - 1])
+                 / hist["Sales"].iloc[i - 1] * 100)
+                if hist["Sales"].iloc[i - 1] > 0 else 0
+                for i in range(1, len(hist))
+            ]
+            g_idx    = x_idx[1:]
+            g_labels = x_labels[1:]
+            bar_colors = [pos_color if g >= 0 else neg_color for g in growth]
+
+            bars = ax3.bar(g_idx, growth, color=bar_colors, alpha=0.80, width=0.6)
+            ax3.axhline(y=0, color="black", linewidth=1, alpha=0.6)
+            _draw_change_lines(ax3, change_x_positions)
+
+            for bar, rate in zip(bars, growth):
+                h = bar.get_height()
+                ax3.annotate(
+                    f"{rate:+.1f}%",
+                    xy=(bar.get_x() + bar.get_width() / 2, h),
+                    xytext=(0, 4 if h >= 0 else -12),
+                    textcoords="offset points",
+                    ha="center", fontsize=7,
+                )
+
+            ax3.set_xticks(g_idx)
+            ax3.set_xticklabels(g_labels, rotation=45, ha="right", fontsize=8)
+        else:
+            ax3.text(
+                0.5, 0.5, "Need 2+ months of data",
+                ha="center", va="center", transform=ax3.transAxes, fontsize=11,
+            )
+
+        ax3.set_title("Month-over-Month Growth (%)", fontsize=13, fontweight="bold")
+        ax3.set_ylabel("Growth Rate (%)")
+        ax3.grid(True, alpha=0.3)
+
+        # ── Chart 4: % of Total Bar Sales ────────────────────────────────── #
+        # This chart isolates real popularity growth from seasonal bar upswings.
+        # If % rises → the cocktail is genuinely gaining share.
+        # If % is flat but revenue rises → it's just a busier season for the bar.
+        ax4 = axes[1, 1]
+
+        pct_values = hist["Pct_of_Total"].tolist()
+        avg_pct    = hist["Pct_of_Total"].mean()
+
+        ax4.plot(
+            x_idx, pct_values,
+            marker="o", linewidth=2.5, markersize=8,
+            color="#E67E22", label="% of Total Sales",  # orange — distinct from other charts
+        )
+        ax4.fill_between(x_idx, pct_values, alpha=0.15, color="#E67E22")
+
+        # Reference line: yearly average %
+        ax4.axhline(
+            y=avg_pct,
+            color="#7F8C8D", linestyle="--", linewidth=1.5,
+            label=f"Year avg: {avg_pct:.2f}%",
+        )
+
+        # Trend line
+        if len(x_idx) >= 2:
+            z_pct = np.polyfit(x_idx, pct_values, 1)
+            p_pct = np.poly1d(z_pct)
+            trend_dir_pct = "(rising)" if z_pct[0] > 0 else "(falling)"
+            ax4.plot(
+                x_idx, p_pct(x_idx),
+                "--", color="red", linewidth=1.2,
+                label=f"Trend {trend_dir_pct}",
+            )
+
+        _draw_change_lines(ax4, change_x_positions)
+        ax4.set_title(
+            "% of Total Bar Sales — Real Popularity",
+            fontsize=13, fontweight="bold",
+        )
+        ax4.set_ylabel("% of Total Sales")
+        ax4.set_xticks(x_idx)
+        ax4.set_xticklabels(x_labels, rotation=45, ha="right", fontsize=9)
+        ax4.legend(fontsize=8)
+        ax4.grid(True, alpha=0.3)
+
+        # Value labels on each point
+        for i, pct in enumerate(pct_values):
+            ax4.annotate(
+                f"{pct:.2f}%",
+                (x_idx[i], pct),
+                textcoords="offset points", xytext=(0, 8),
+                ha="center", fontsize=7, color="#2C3E50",
+            )
+
+        # ── Final layout & save ────────────────────────────────────────────── #
+        note = (
+            "Red dashed lines = cocktail version change"
+            if change_dates
+            else "Tip: pass cocktail_change_dates=[(year, month), ...] to mark version changes"
+        )
+        fig.text(
+            0.5, 0.01, note,
+            ha="center", fontsize=8, color="#7F8C8D", style="italic",
+        )
+
+        plt.tight_layout(rect=[0, 0.03, 1, 1])
+        filename = f"dashboard_5_limited_edition_{self.year}.png"
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
+        print(f"OK Dashboard 5 saved as '{filename}'")
+        plt.show()
+
+    def run_all_dashboards(
+        self,
+        cocktail_change_dates: Optional[List[Tuple[int, str]]] = None,
+    ) -> None:
         """
         Execute the complete dashboard analysis workflow.
 
         This is the main method that orchestrates the entire analysis process.
-        It loads data, validates it, and creates all 4 thematic dashboards.
+        It loads data, validates it, and creates all 5 thematic dashboards.
 
         Workflow:
         ---------
         1. Load all available monthly data from reports directory
         2. Validate that data was found
-        3. Create 4 focused dashboards:
+        3. Create 5 focused dashboards:
            - Dashboard 1: Temporal Trends & Growth
            - Dashboard 2: Product Performance
            - Dashboard 3: Category Analysis
-           - Dashboard 4: Business Metrics
+           - Dashboard 4: Category Performance
+           - Dashboard 5: Limited Edition Cocktail Tracker (selected year only)
         4. Display summary of generated files and data period
+
+        Parameters:
+        -----------
+        cocktail_change_dates : list of (int, str) tuples, optional
+            List of (year, month_name) pairs marking when the "Cocktail
+            limited edition" recipe was swapped.
+            Example: [(2024, "June"), (2025, "March")]
+            Red dashed vertical lines will be drawn at those dates on
+            Dashboard 5 to help compare editions.
 
         Output Files:
         ------------
-        - dashboard_1_temporal_trends.png
-        - dashboard_2_product_performance.png
-        - dashboard_3_category_analysis.png
-        - dashboard_4_business_metrics.png
+        - dashboard_1_temporal_trends_YEAR.png
+        - dashboard_2_product_performance_YEAR.png
+        - dashboard_3_category_analysis_YEAR.png
+        - dashboard_4_category_performance_YEAR.png
+        - dashboard_5_limited_edition_YEAR.png
 
         Console Output:
         --------------
@@ -989,59 +1350,66 @@ class MultiDashboardAnalyzer:
             print("ERROR: No data found!")
             return
 
-        # Step 3: Generate all 4 thematic dashboards
-        # Each dashboard focuses on a specific aspect of the business
-        self.create_temporal_trends_dashboard()  # Time-based analysis
-        self.create_product_performance_dashboard()  # Product-focused analysis
-        self.create_category_analysis_dashboard()  # Category and menu analysis
-        self.create_business_metrics_dashboard()  # KPIs and business metrics
+        # Step 3: Generate all 5 thematic dashboards
+        self.create_temporal_trends_dashboard()        # Time-based analysis
+        self.create_product_performance_dashboard()    # Product-focused analysis
+        self.create_category_analysis_dashboard()      # Category and menu analysis
+        self.create_business_metrics_dashboard()       # Category performance
+        self.create_limited_edition_dashboard(         # Multi-year cocktail tracker
+            change_dates=cocktail_change_dates
+        )
 
         # Step 4: Display completion summary
         print(f"\n>> All {self.year} dashboards created successfully!")
         print("Generated files:")
-        print(f"  - dashboard_1_temporal_trends_{self.year}.png - Trends & Growth")
+        print(f"  - dashboard_1_temporal_trends_{self.year}.png    - Trends & Growth")
         print(f"  - dashboard_2_product_performance_{self.year}.png - Product Analysis")
-        print(
-            f"  - dashboard_3_category_analysis_{self.year}.png - Categories & Sections"
-        )
-        print(
-            f"  - dashboard_4_category_performance_{self.year}.png - Category Performance"
-        )
+        print(f"  - dashboard_3_category_analysis_{self.year}.png  - Categories & Sections")
+        print(f"  - dashboard_4_category_performance_{self.year}.png - Category Performance")
+        print(f"  - dashboard_5_limited_edition_{self.year}.png     - Cocktail LE Tracker")
         print(
             f"\n>> Data period: {self.available_months[0]} to {self.available_months[-1]} {self.year}"
         )
 
 
-def main(year: int = 2026):
+def main(year: int = 2026, cocktail_change_dates=None):
     """
     Main execution function for the multi-dashboard analysis.
 
     This function serves as the entry point when the script is run directly.
     It creates an analyzer instance for the specified year and executes
-    the complete dashboard workflow.
+    the complete dashboard workflow, including Dashboard 5 (Limited Edition
+    Cocktail Tracker).
 
     Parameters:
     -----------
     year : int
-        Year to analyze (default: 2026 - current year)
+        Year to analyze for Dashboards 1-4 (default: 2026).
+    cocktail_change_dates : list of (int, str) tuples, optional
+        Mark when the "Cocktail limited edition" recipe changed.
+        Example: [(2024, "June"), (2025, "March")]
+        These appear as red dashed lines on Dashboard 5.
 
     Usage:
     ------
-    From command line (current year):
+    From command line (current year, no change markers):
         python current_year_dashboard.py
 
     For specific year:
         python -c "from current_year_dashboard import main; main(2024)"
 
-    Or imported and called from other scripts:
+    With cocktail version-change markers:
+        python -c "
         from current_year_dashboard import main
-        main(2024)
+        main(2026, cocktail_change_dates=[(2024, 'June'), (2025, 'March')])
+        "
 
     Side Effects:
     ------------
-    - Creates 4 PNG dashboard files in the current directory
+    - Creates 5 PNG dashboard files in the current directory
     - Prints progress and summary information to console
     - Processes all available monthly data from reports/YEAR/ directory
+    - Dashboard 5 reads ALL years, not just the selected year
 
     Returns:
     --------
@@ -1049,7 +1417,7 @@ def main(year: int = 2026):
     """
     # Create analyzer instance for specified year and run complete workflow
     analyzer = MultiDashboardAnalyzer(year=year)
-    analyzer.run_all_dashboards()
+    analyzer.run_all_dashboards(cocktail_change_dates=cocktail_change_dates)
 
 
 # Script entry point - runs main() when script is executed directly

@@ -14,8 +14,8 @@ A comprehensive Python-based sales data analysis system for bar operations, feat
 - **Production Ready**: MAPE ~5%, R² ~0.29, iterative forecasting with dynamic lag updates
 
 ### 📊 **Current Year Dashboard System**
-- **4 Specialized Dashboards**: Temporal Trends, Product Performance, Category Analysis, Category Performance
-- **Year-Specific Analysis**: Analyze any year (2023, 2024, 2025) separately
+- **5 Specialized Dashboards**: Temporal Trends, Product Performance, Category Analysis, Category Performance, Limited Edition Cocktail Tracker
+- **Year-Specific Analysis**: Analyze any year (2023, 2024, 2025, 2026) separately
 - **Dynamic Data Loading**: Automatically processes monthly data from `reports/YEAR/MONTH/` structure
 - **Professional Visualizations**: Publication-quality matplotlib layouts
 
@@ -30,6 +30,12 @@ A comprehensive Python-based sales data analysis system for bar operations, feat
 - **Premium Cocktails**: Specialized analysis for Premium Classics menu section
 - **Food Products**: Dedicated food category performance analysis
 - **Happy Hour Analysis**: Promotional period effectiveness
+### 🍹 **Limited Edition Cocktail Tracker (Dashboard 5)**
+- **Year-Specific View**: Tracks "Cocktail limited edition" performance for the selected year
+- **Version Comparison**: Mark the months when the cocktail recipe was swapped — red dashed lines appear on every chart to visually separate editions
+- **Trend Detection**: Trend lines show whether interest is growing (rising), stable, or declining (falling)
+- **4 Charts**: Monthly Revenue, Monthly Units Sold, Month-over-Month Growth (%), % of Total Bar Sales
+
 
 ## 📋 Requirements
 
@@ -102,6 +108,33 @@ analyzer_2024.run_all_dashboards()
 - `dashboard_2_product_performance_YEAR.png`
 - `dashboard_3_category_analysis_YEAR.png`
 - `dashboard_4_category_performance_YEAR.png`
+- `dashboard_5_limited_edition_YEAR.png`
+
+### 🍹 **Dashboard 5: Limited Edition Cocktail Tracker**
+
+```python
+from current_year_dashboard import MultiDashboardAnalyzer
+
+analyzer = MultiDashboardAnalyzer(year=2026)
+
+# Run all dashboards — Dashboard 5 generated automatically
+analyzer.run_all_dashboards()
+
+# Mark the months when the cocktail recipe was changed
+# Red dashed vertical lines appear on all 4 charts in Dashboard 5
+analyzer.run_all_dashboards(
+    cocktail_change_dates=["June", "September"]
+)
+
+# Or call Dashboard 5 on its own
+analyzer.create_limited_edition_dashboard(
+    product_name="Cocktail limited edition",   # default
+    change_dates=["June", "September"]
+)
+```
+
+**Generated File:**
+- `dashboard_5_limited_edition_YEAR.png`
 
 ### 📈 **Single Month Analysis**
 
@@ -132,11 +165,17 @@ analyzer = main(year=2024, month="September")
 # Multi-year sales forecasting (ML-based)
 python multi_year_sales_predictor.py
 
-# Current year dashboard (2025)
+# Current year dashboard (2026) — all 5 dashboards
 python current_year_dashboard.py
 
 # Dashboard for specific year (e.g., 2024)
 python -c "from current_year_dashboard import main; main(2024)"
+
+# With cocktail version-change markers on Dashboard 5
+python -c "
+from current_year_dashboard import main
+main(2026, cocktail_change_dates=['February'])
+"
 
 # Single month analysis (interactive - uses current month by default)
 python single_month_analyzer.py
@@ -170,7 +209,11 @@ reports/
 │   ├── January/
 │   │   └── report-sales_takings-item_sold.csv
 │   └── ...                   # All 12 months
-└── 2025/                      # Current year (partial)
+├── 2025/                      # Full year 2025
+│   ├── January/
+│   │   └── report-sales_takings-item_sold.csv
+│   └── ...                   # All 12 months
+└── 2026/                      # Current year (partial)
     ├── January/
     │   └── report-sales_takings-item_sold.csv
     └── ...                   # Available months
@@ -231,6 +274,13 @@ The system expects CSV files with the following structure:
 - **Top 5 Premium Cocktails**: Specialized analysis for Premium Classics B menu section
 - **Top 5 Beer Products**: Dedicated beer performance tracking (Beer Berlin section only)
 - **Top 5 Food Products**: Food category performance analysis (Food Berlin section)
+
+### 🍹 **Dashboard 5: Limited Edition Cocktail Tracker**
+- **Sales History**: Monthly revenue ($) and units sold for the selected year
+- **Trend Detection**: Automatic trend lines with direction indicator for both revenue and units
+- **Month-over-Month Growth**: Color-coded bar chart (green = growth, red = decline) with % labels
+- **Real Popularity metric**: % of Total Bar Sales chart with yearly average reference line, isolating genuine popularity growth from seasonal effects
+- **Version Change Markers**: Pass `cocktail_change_dates` to draw red dashed lines when you swapped the cocktail — makes it easy to compare how each edition performed vs. the previous one
 
 ### 🔍 **Advanced Analytics Features**
 - **Dynamic Month Detection**: Automatically processes available months from reports/ directory
