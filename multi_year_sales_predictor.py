@@ -672,7 +672,7 @@ class AdvancedSalesPredictor:
         gs = fig.add_gridspec(3, 2, hspace=0.4, wspace=0.25, height_ratios=[1, 1, 1])
 
         fig.suptitle(
-            "Advanced Sales Forecasting - Multi-Year Analysis (2023-2025)",
+            "Advanced Sales Forecasting - Multi-Year Analysis (2023-2026)",
             fontsize=20,
             fontweight="bold",
             y=0.98,
